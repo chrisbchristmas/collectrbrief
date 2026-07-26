@@ -1,0 +1,60 @@
+/* CollectrBrief global styles */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --cream: #f9f6f1;
+  --ink: #1a1a1a;
+  --muted: #6b6b6b;
+  --accent: #c8873a;
+  --accent-dark: #a06828;
+  --border: #e5e0d8;
+  --white: #ffffff;
+  --green: #16a34a;
+  --red: #dc2626;
+  --radius: 10px;
+}
+
+html { font-size: 16px; scroll-behavior: smooth; }
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--cream); color: var(--ink); line-height: 1.6; }
+
+h1, h2, h3 { font-family: 'Playfair Display', Georgia, serif; line-height: 1.2; }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+button, .btn {
+  cursor: pointer;
+  border: none;
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.75rem 1.75rem;
+  transition: background 0.18s, transform 0.1s;
+}
+.btn-primary {
+  background: var(--accent);
+  color: var(--white);
+}
+.btn-primary:hover { background: var(--accent-dark); }
+.btn-primary:active { transform: scale(0.98); }
+
+input, select, textarea {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: 1rem;
+  background: var(--white);
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.15s;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+
+label { display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--ink); }
+
+.container { max-width: 700px; margin: 0 auto; padding: 0 1.25rem; }
+.card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; }
+.tag { display: inline-block; background: #f0e9de; color: var(--accent-dark); font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 999px; letter-spacing: 0.04em; text-transform: uppercase; }

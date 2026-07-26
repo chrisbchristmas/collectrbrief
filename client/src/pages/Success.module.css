@@ -1,0 +1,7 @@
+/* Success.module.css — shared by Success + Unsubscribe */
+.page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; background: var(--cream); }
+.card { max-width: 480px; width: 100%; background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 3rem 2.5rem; text-align: center; }
+.icon { font-size: 3rem; margin-bottom: 1rem; }
+.title { font-size: 1.8rem; margin-bottom: 1rem; color: var(--ink); }
+.body { color: var(--muted); line-height: 1.7; font-size: 1rem; margin-bottom: 0.75rem; }
+.homeLink { display: inline-block; margin-top: 1.5rem; color: var(--accent); font-weight: 600; font-size: 0.95rem; }
