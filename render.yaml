@@ -25,13 +25,3 @@ services:
       - key: PORT
         value: 3001
 
-  - type: web
-    name: collectrbrief-client
-    runtime: node
-    buildCommand: cd client && npm install && npm run build
-    startCommand: cd client && npm run preview
-    envVars:
-      - key: VITE_API_URL
-        value: https://collectrbrief-api.onrender.com
-      - key: PORT
-        value: 5173

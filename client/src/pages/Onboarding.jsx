@@ -38,7 +38,8 @@ export default function Onboarding() {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch('/api/subscribers', {
+      const API = import.meta.env.VITE_API_URL || ''
+      const res = await fetch(`${API}/api/subscribers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

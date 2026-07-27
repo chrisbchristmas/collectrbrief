@@ -12,7 +12,8 @@ export default function Unsubscribe() {
     if (!id) { setError('Missing subscriber ID'); return }
     setStatus('loading')
     try {
-      const res = await fetch(`/api/subscribers/${id}/unsubscribe`, { method: 'DELETE' })
+      const API = import.meta.env.VITE_API_URL || ''
+      const res = await fetch(`${API}/api/subscribers/${id}/unsubscribe`, { method: 'DELETE' })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to unsubscribe')
       setStatus('done')
