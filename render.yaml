@@ -2,8 +2,9 @@ services:
   - type: web
     name: collectrbrief-api
     runtime: node
-    buildCommand: cd server && npm install
-    startCommand: cd server && node index.js
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
