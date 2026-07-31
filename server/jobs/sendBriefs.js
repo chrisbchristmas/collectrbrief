@@ -3,8 +3,9 @@
 
 import cron from 'node-cron';
 import { query } from '../db/index.js';
-import { generateBriefForSubscriber } from '../services/briefEngine.js';
+import { generateBriefForSubscriber, buildSubjectLine } from '../services/briefEngine.js';
 import { sendBrief } from '../services/emailer.js';
+import { generateSampleBrief, generateMarketPages } from '../services/publicContent.js';
 
 const BATCH_SIZE = 10; // Process subscribers in batches to avoid hammering APIs
 const BATCH_DELAY_MS = 2000;
@@ -52,8 +53,8 @@ export async function runBriefJob() {
         }
 
         try {
-          const { briefId, html } = await generateBriefForSubscriber(sub, weekOf);
-          const subject = `Your CollectrBrief — Week of ${weekLabel(weekOf)}`;
+          const { briefId, html, metrics } = await generateBriefForSubscriber(sub, weekOf);
+          const subject = buildSubjectLine(metrics, weekOf);
           await sendBrief(sub.email, subject, html, sub.id);
           await query(
             `UPDATE briefs SET status='sent', sent_at=NOW() WHERE id=$1`,
@@ -75,6 +76,15 @@ export async function runBriefJob() {
   }
 
   console.log(`[BriefJob] Done. Sent: ${stats.sent} | Failed: ${stats.failed} | Skipped: ${stats.skipped}`);
+
+  // Regenerate public content (sample brief + SEO market pages) — non-fatal
+  try {
+    await generateSampleBrief(weekOf);
+    await generateMarketPages(weekOf);
+  } catch (err) {
+    console.error('[BriefJob] Public content generation failed:', err.message);
+  }
+
   return stats;
 }
 

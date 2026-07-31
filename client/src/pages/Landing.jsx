@@ -31,6 +31,15 @@ export default function Landing() {
             Start my free 14-day trial
           </button>
           <p className={styles.heroNote}>$9.99/month after trial · Cancel anytime</p>
+          <p style={{ marginTop: '0.5rem' }}>
+            <a
+              href={`${import.meta.env.VITE_API_URL || 'https://collectrbrief-api.onrender.com'}/sample`}
+              target="_blank" rel="noopener noreferrer"
+              style={{ color: '#666', fontSize: '0.95rem', textDecoration: 'underline' }}
+            >
+              See a real sample brief →
+            </a>
+          </p>
         </div>
       </section>
 

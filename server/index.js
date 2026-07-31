@@ -7,6 +7,7 @@ import { runMigrations } from './db/index.js';
 import subscribersRouter from './routes/subscribers.js';
 import webhooksRouter from './routes/webhooks.js';
 import adminRouter from './routes/admin.js';
+import publicRouter from './routes/public.js';
 import { scheduleBriefJob } from './jobs/sendBriefs.js';
 
 const app = express();
@@ -25,10 +26,20 @@ app.use(express.json());
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok', ts: new Date().toISOString() }));
 
+// Public config for the client (no secrets)
+app.get('/api/config', (req, res) => res.json({
+  annualEnabled: Boolean(process.env.STRIPE_ANNUAL_PRICE_ID),
+  monthlyPrice: 9.99,
+  annualPrice: 99,
+}));
+
 // API routes
 app.use('/api/subscribers', subscribersRouter);
 app.use('/api/webhooks', webhooksRouter);
 app.use('/api/admin', adminRouter);
+
+// Public pages (shareable briefs, sample brief, SEO market pages)
+app.use('/', publicRouter);
 
 // Global error handler
 app.use((err, req, res, _next) => {

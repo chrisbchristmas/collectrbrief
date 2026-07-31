@@ -106,6 +106,19 @@ router.get('/preview-brief/:subscriberId', async (req, res, next) => {
   }
 });
 
+// POST /api/admin/generate-public-content — regenerate sample brief + market pages now
+router.post('/generate-public-content', async (req, res, next) => {
+  try {
+    const { generateSampleBrief, generateMarketPages } = await import('../services/publicContent.js');
+    const weekOf = getMostRecentSunday();
+    await generateSampleBrief(weekOf);
+    await generateMarketPages(weekOf);
+    res.json({ success: true, weekOf });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // GET /api/admin/magic-link/:subscriberId — generate the preferences magic link for a subscriber
 router.get('/magic-link/:subscriberId', async (req, res, next) => {
   try {

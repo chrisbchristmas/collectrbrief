@@ -35,8 +35,10 @@ export default function Preferences() {
         setFirstName(data.first_name || '')
         setNiche(data.niche || '')
         const wl = typeof data.watchlist === 'string' ? JSON.parse(data.watchlist) : (data.watchlist || [])
-        // Normalize: items may be strings or {label, keywords}
-        setWatchlist(wl.map(w => typeof w === 'string' ? { label: w, keywords: w } : { label: w.label || '', keywords: w.keywords || w.label || '' }))
+        // Normalize: items may be strings or {label, keywords, purchase_price}
+        setWatchlist(wl.map(w => typeof w === 'string'
+          ? { label: w, keywords: w, purchase_price: '' }
+          : { label: w.label || '', keywords: w.keywords || w.label || '', purchase_price: w.purchase_price || '' }))
         setStatus('ready')
       })
       .catch(err => { setError(err.message); setStatus('error') })
@@ -44,7 +46,7 @@ export default function Preferences() {
 
   const updateItem = (i, field, val) =>
     setWatchlist(w => w.map((item, idx) => idx === i ? { ...item, [field]: val } : item))
-  const addItem = () => watchlist.length < 15 && setWatchlist(w => [...w, { label: '', keywords: '' }])
+  const addItem = () => watchlist.length < 15 && setWatchlist(w => [...w, { label: '', keywords: '', purchase_price: '' }])
   const removeItem = (i) => setWatchlist(w => w.filter((_, idx) => idx !== i))
 
   const valid = niche && watchlist.length > 0 && watchlist.every(w => w.label.trim() && w.keywords.trim())
@@ -59,7 +61,11 @@ export default function Preferences() {
         body: JSON.stringify({
           first_name: firstName.trim() || null,
           niche,
-          watchlist: watchlist.map(w => ({ label: w.label.trim(), keywords: w.keywords.trim() })),
+          watchlist: watchlist.map(w => ({
+            label: w.label.trim(),
+            keywords: w.keywords.trim(),
+            ...(Number(w.purchase_price) > 0 ? { purchase_price: Number(w.purchase_price) } : {}),
+          })),
         }),
       })
       const data = await res.json()
@@ -137,6 +143,10 @@ export default function Preferences() {
                 <label>Search keywords</label>
                 <input type="text" value={item.keywords} onChange={e => updateItem(i, 'keywords', e.target.value)} />
               </div>
+              <div className={styles.field}>
+                <label>What you paid <span style={{ color: '#999', fontWeight: 400 }}>(optional — unlocks portfolio tracking in your brief)</span></label>
+                <input type="number" min="0" step="0.01" placeholder="e.g. 850" value={item.purchase_price} onChange={e => updateItem(i, 'purchase_price', e.target.value)} />
+              </div>
             </div>
           ))}
 
@@ -154,6 +164,17 @@ export default function Preferences() {
           >
             {status === 'saving' ? 'Saving…' : status === 'saved' ? '✓ Saved' : 'Save changes'}
           </button>
+
+          <div style={{ marginTop: '2rem', padding: '1rem 1.25rem', background: '#f7f4ee', borderRadius: 8, border: '1px dashed #ccc' }}>
+            <p style={{ margin: 0, fontWeight: 700, fontSize: '0.95rem' }}>🎁 Give a month, get a month</p>
+            <p style={{ margin: '0.35rem 0 0.6rem', color: '#666', fontSize: '0.85rem' }}>Share your link — when a friend subscribes, you get a free month credited automatically.</p>
+            <input
+              readOnly
+              value={`https://www.collectrbrief.com/subscribe?ref=${id}`}
+              onFocus={e => e.target.select()}
+              style={{ width: '100%', padding: '0.5rem', fontSize: '0.8rem', border: '1px solid #ddd', borderRadius: 6, boxSizing: 'border-box', background: '#fff' }}
+            />
+          </div>
         </div>
       </div>
     </div>

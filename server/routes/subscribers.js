@@ -18,9 +18,10 @@ const router = Router();
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 
 // POST /api/subscribers — create subscriber + initiate Stripe checkout
+// Body: { email, first_name, niche, watchlist, plan?: 'monthly'|'annual', ref?: <referrer subscriber id> }
 router.post('/', async (req, res, next) => {
   try {
-    const { email, first_name, niche, watchlist } = req.body;
+    const { email, first_name, niche, watchlist, plan, ref } = req.body;
 
     if (!email || !niche || !Array.isArray(watchlist) || watchlist.length === 0) {
       return res.status(400).json({ error: 'email, niche, and watchlist are required' });
@@ -29,17 +30,28 @@ router.post('/', async (req, res, next) => {
       return res.status(400).json({ error: 'Maximum 15 watchlist items' });
     }
 
+    // Validate referrer (must be an existing, distinct subscriber)
+    let referrerId = null;
+    if (ref && /^[0-9a-f-]{36}$/i.test(ref)) {
+      const r = await query(
+        `SELECT id FROM subscribers WHERE id=$1 AND unsubscribed_at IS NULL AND email <> $2`,
+        [ref, email.toLowerCase().trim()]
+      );
+      if (r.rows.length > 0) referrerId = r.rows[0].id;
+    }
+
     // Upsert subscriber
     const result = await query(
-      `INSERT INTO subscribers (email, first_name, niche, watchlist)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO subscribers (email, first_name, niche, watchlist, referred_by)
+       VALUES ($1, $2, $3, $4, $5)
        ON CONFLICT (email) DO UPDATE
          SET first_name = EXCLUDED.first_name,
              niche = EXCLUDED.niche,
              watchlist = EXCLUDED.watchlist,
+             referred_by = COALESCE(subscribers.referred_by, EXCLUDED.referred_by),
              updated_at = NOW()
        RETURNING id, email, subscription_status`,
-      [email.toLowerCase().trim(), first_name || null, niche, JSON.stringify(watchlist)]
+      [email.toLowerCase().trim(), first_name || null, niche, JSON.stringify(watchlist), referrerId]
     );
 
     const subscriber = result.rows[0];
@@ -50,16 +62,21 @@ router.post('/', async (req, res, next) => {
       return res.json({ subscriberId: subscriber.id, checkoutUrl: null, status: 'active' });
     }
 
+    // Pick price: annual (if configured and requested) or monthly
+    const priceId = (plan === 'annual' && process.env.STRIPE_ANNUAL_PRICE_ID)
+      ? process.env.STRIPE_ANNUAL_PRICE_ID
+      : process.env.STRIPE_PRICE_ID;
+
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       payment_method_types: ['card'],
       customer_email: email.toLowerCase().trim(),
       line_items: [{
-        price: process.env.STRIPE_PRICE_ID,
+        price: priceId,
         quantity: 1,
       }],
-      metadata: { subscriber_id: subscriber.id },
+      metadata: { subscriber_id: subscriber.id, plan: plan === 'annual' ? 'annual' : 'monthly' },
       success_url: `${process.env.CLIENT_ORIGIN}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.CLIENT_ORIGIN}/?cancelled=1`,
       subscription_data: {

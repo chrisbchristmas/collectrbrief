@@ -41,6 +41,30 @@ router.post('/stripe', async (req, res) => {
         [session.customer, session.subscription, subscriberId]
       );
 
+      // Referral credit: give the referrer one free month (Stripe balance credit)
+      // Fires once per referred subscriber (referral_credited flag).
+      try {
+        const refRow = await query(
+          `SELECT s.referred_by, r.stripe_customer_id AS referrer_customer, r.email AS referrer_email
+           FROM subscribers s
+           LEFT JOIN subscribers r ON r.id = s.referred_by
+           WHERE s.id=$1 AND s.referred_by IS NOT NULL AND s.referral_credited = FALSE`,
+          [subscriberId]
+        );
+        if (refRow.rows.length > 0 && refRow.rows[0].referrer_customer) {
+          const monthlyPriceCents = Number(process.env.REFERRAL_CREDIT_CENTS || 999);
+          await stripe.customers.createBalanceTransaction(refRow.rows[0].referrer_customer, {
+            amount: -monthlyPriceCents, // negative = credit toward future invoices
+            currency: 'usd',
+            description: 'CollectrBrief referral credit — 1 month free',
+          });
+          await query(`UPDATE subscribers SET referral_credited = TRUE WHERE id=$1`, [subscriberId]);
+          console.log(`[Webhook] Referral credit granted to ${refRow.rows[0].referrer_email}`);
+        }
+      } catch (e) {
+        console.error('[Webhook] Referral credit failed:', e.message);
+      }
+
       // Send welcome email
       const sub = await query('SELECT email, first_name FROM subscribers WHERE id=$1', [subscriberId]);
       if (sub.rows.length > 0) {

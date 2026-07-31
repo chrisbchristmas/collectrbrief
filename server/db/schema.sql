@@ -44,3 +44,29 @@ CREATE TABLE IF NOT EXISTS price_snapshots (
 CREATE INDEX IF NOT EXISTS idx_subscribers_email ON subscribers(email);
 CREATE INDEX IF NOT EXISTS idx_briefs_subscriber_week ON briefs(subscriber_id, week_of);
 CREATE INDEX IF NOT EXISTS idx_price_snapshots_keywords ON price_snapshots(keywords, source, fetched_at DESC);
+
+-- === v2 additions (idempotent) ===
+
+-- Week-over-week metrics per brief: { avgTotal, prevAvgTotal, wowPct, mover: {label, pct, dir} }
+ALTER TABLE briefs ADD COLUMN IF NOT EXISTS metrics JSONB;
+
+-- Referral program: who referred this subscriber + their own shareable code
+ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS referred_by UUID REFERENCES subscribers(id);
+ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS referral_credited BOOLEAN NOT NULL DEFAULT FALSE;
+
+-- Public weekly market roundup pages (SEO), one per niche per week
+CREATE TABLE IF NOT EXISTS market_pages (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  niche_slug  TEXT NOT NULL,            -- 'pokemon', 'sports-cards', ...
+  week_of     DATE NOT NULL,
+  html        TEXT NOT NULL,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (niche_slug, week_of)
+);
+
+-- The public sample brief (regenerated weekly, one row per week)
+CREATE TABLE IF NOT EXISTS sample_briefs (
+  week_of     DATE PRIMARY KEY,
+  html        TEXT NOT NULL,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

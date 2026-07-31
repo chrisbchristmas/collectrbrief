@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import styles from './Onboarding.module.css'
 
 const NICHES = [
@@ -10,11 +10,20 @@ const STEPS = ['Your details', 'Your watchlist', 'Review & subscribe']
 
 export default function Onboarding() {
   const navigate = useNavigate()
+  const [params] = useSearchParams()
+  const ref = params.get('ref') || ''
   const [step, setStep] = useState(0)
   const [form, setForm] = useState({ email: '', first_name: '', niche: '' })
   const [watchlist, setWatchlist] = useState([{ label: '', keywords: '' }])
+  const [plan, setPlan] = useState('monthly')
+  const [annualEnabled, setAnnualEnabled] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    const API = import.meta.env.VITE_API_URL || ''
+    fetch(`${API}/api/config`).then(r => r.json()).then(c => setAnnualEnabled(Boolean(c.annualEnabled))).catch(() => {})
+  }, [])
 
   const set = (field, val) => setForm(f => ({ ...f, [field]: val }))
 
@@ -47,6 +56,8 @@ export default function Onboarding() {
           first_name: form.first_name.trim() || null,
           niche: form.niche,
           watchlist: watchlist.map(w => ({ label: w.label.trim(), keywords: w.keywords.trim() })),
+          plan,
+          ref: ref || undefined,
         }),
       })
       const data = await res.json()
@@ -149,7 +160,35 @@ export default function Onboarding() {
           {step === 2 && (
             <div>
               <h2 className={styles.stepTitle}>Review & start your trial</h2>
-              <p className={styles.stepSub}>14 days free, then $9.99/month. Cancel anytime.</p>
+              <p className={styles.stepSub}>14 days free. Cancel anytime.</p>
+
+              {annualEnabled && (
+                <div style={{ display: 'flex', gap: '0.75rem', margin: '0 0 1.25rem' }}>
+                  {[
+                    { key: 'monthly', title: '$9.99/mo', sub: 'Billed monthly' },
+                    { key: 'annual', title: '$99/yr', sub: '2 months free' },
+                  ].map(p => (
+                    <button
+                      key={p.key}
+                      onClick={() => setPlan(p.key)}
+                      style={{
+                        flex: 1, padding: '0.9rem', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit',
+                        border: plan === p.key ? '2px solid #1a1a1a' : '1px solid #ddd',
+                        background: plan === p.key ? '#f7f4ee' : '#fff',
+                      }}
+                    >
+                      <div style={{ fontWeight: 700, fontSize: '1.05rem' }}>{p.title}</div>
+                      <div style={{ color: '#888', fontSize: '0.8rem' }}>{p.sub}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {ref && (
+                <p style={{ background: '#dcfce7', color: '#166534', padding: '0.5rem 0.9rem', borderRadius: 6, fontSize: '0.85rem' }}>
+                  🎁 Referred by a friend — you're helping them earn a free month!
+                </p>
+              )}
 
               <div className={styles.reviewSection}>
                 <div className={styles.reviewLabel}>Email</div>
