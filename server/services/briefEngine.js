@@ -5,6 +5,7 @@ import { fetchSoldSales, computeTrend } from './cardhedge.js';
 import { searchProduct } from './pricecharting.js';
 import { generateCommentary } from './llm.js';
 import { query } from '../db/index.js';
+import { signToken } from '../utils/token.js';
 
 /**
  * Generate and persist a brief for a single subscriber.
@@ -96,6 +97,7 @@ function renderBriefEmail(subscriber, itemResults, commentary, weekOf) {
   const weekLabel = new Date(weekOf).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   const clientOrigin = process.env.CLIENT_ORIGIN || 'https://collectrbrief.com';
   const unsubUrl = `${clientOrigin}/unsubscribe?id=${subscriber.id}`;
+  const prefsUrl = `${clientOrigin}/preferences?id=${subscriber.id}&token=${signToken(subscriber.id)}`;
 
   const trendIcon = { up: '📈', down: '📉', stable: '➡️' };
 
@@ -158,7 +160,7 @@ function renderBriefEmail(subscriber, itemResults, commentary, weekOf) {
   <!-- Footer -->
   <div style="text-align:center;color:#bbb;font-size:12px;padding:16px 0">
     <p>You're receiving this because you subscribed to CollectrBrief.</p>
-    <p><a href="${unsubUrl}" style="color:#bbb">Unsubscribe</a> · <a href="${clientOrigin}" style="color:#bbb">Manage preferences</a></p>
+    <p><a href="${unsubUrl}" style="color:#bbb">Unsubscribe</a> · <a href="${prefsUrl}" style="color:#bbb">Manage preferences</a></p>
     <p>CollectrBrief · Personalized market intelligence for collectors</p>
   </div>
 

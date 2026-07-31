@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { query } from '../db/index.js';
 import { generateBriefForSubscriber } from '../services/briefEngine.js';
 import { sendBrief } from '../services/emailer.js';
+import { signToken } from '../utils/token.js';
 
 const router = Router();
 
@@ -100,6 +101,19 @@ router.get('/preview-brief/:subscriberId', async (req, res, next) => {
 
     res.setHeader('Content-Type', 'text/html');
     res.send(html);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/admin/magic-link/:subscriberId — generate the preferences magic link for a subscriber
+router.get('/magic-link/:subscriberId', async (req, res, next) => {
+  try {
+    const r = await query(`SELECT id, email FROM subscribers WHERE id=$1`, [req.params.subscriberId]);
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Not found' });
+    const origin = process.env.CLIENT_ORIGIN || 'https://collectrbrief.com';
+    const url = `${origin}/preferences?id=${r.rows[0].id}&token=${signToken(r.rows[0].id)}`;
+    res.json({ email: r.rows[0].email, url });
   } catch (err) {
     next(err);
   }

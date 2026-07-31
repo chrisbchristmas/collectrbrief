@@ -3,6 +3,16 @@ import { Router } from 'express';
 import Stripe from 'stripe';
 import { query } from '../db/index.js';
 import { sendWelcome } from '../services/emailer.js';
+import { verifyToken } from '../utils/token.js';
+
+// Magic-link guard: requires ?token=<hmac> (or x-pref-token header) matching the subscriber id
+function requireMagicToken(req, res, next) {
+  const token = req.query.token || req.headers['x-pref-token'];
+  if (!verifyToken(req.params.id, token)) {
+    return res.status(403).json({ error: 'Invalid or missing access token' });
+  }
+  next();
+}
 
 const router = Router();
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
@@ -64,8 +74,8 @@ router.post('/', async (req, res, next) => {
   }
 });
 
-// GET /api/subscribers/:id — get subscriber info (for preferences page)
-router.get('/:id', async (req, res, next) => {
+// GET /api/subscribers/:id — get subscriber info (for preferences page, magic-link protected)
+router.get('/:id', requireMagicToken, async (req, res, next) => {
   try {
     const result = await query(
       `SELECT id, email, first_name, niche, watchlist, subscription_status, created_at
@@ -79,8 +89,8 @@ router.get('/:id', async (req, res, next) => {
   }
 });
 
-// PATCH /api/subscribers/:id — update watchlist / preferences
-router.patch('/:id', async (req, res, next) => {
+// PATCH /api/subscribers/:id — update watchlist / preferences (magic-link protected)
+router.patch('/:id', requireMagicToken, async (req, res, next) => {
   try {
     const { first_name, niche, watchlist } = req.body;
     const updates = [];

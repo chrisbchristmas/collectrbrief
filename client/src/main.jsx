@@ -5,6 +5,8 @@ import Landing from './pages/Landing.jsx'
 import Onboarding from './pages/Onboarding.jsx'
 import Success from './pages/Success.jsx'
 import Unsubscribe from './pages/Unsubscribe.jsx'
+import Preferences from './pages/Preferences.jsx'
+import Admin from './pages/Admin.jsx'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -15,6 +17,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/subscribe" element={<Onboarding />} />
         <Route path="/success" element={<Success />} />
         <Route path="/unsubscribe" element={<Unsubscribe />} />
+        <Route path="/preferences" element={<Preferences />} />
+        <Route path="/admin" element={<Admin />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>
