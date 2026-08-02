@@ -55,20 +55,16 @@ export default function Landing() {
         <button className="btn btn-primary" onClick={() => navigate('/subscribe')}>Get Your Brief →</button>
       </nav>
 
-      {/* HERO — with background deco: Pokémon cards top-right, graded cards bottom-left */}
+      {/* HERO — Pokémon top-right, sports cards bottom-left, MTG inner-left, memorabilia inner-right */}
       <section className={styles.hero}>
-        <img
-          aria-hidden="true"
-          className={`${styles.deco} ${styles.decoHero1}`}
-          src="https://images.unsplash.com/photo-1647892591880-58c55fd726d8?w=500&h=500&fit=crop&q=70&auto=format"
-          alt=""
-        />
-        <img
-          aria-hidden="true"
-          className={`${styles.deco} ${styles.decoHero2}`}
-          src="https://images.unsplash.com/photo-1607310073276-9f48dec47340?w=500&h=500&fit=crop&q=70&auto=format"
-          alt=""
-        />
+        <img aria-hidden="true" className={`${styles.deco} ${styles.decoHero1}`}
+          src="https://images.unsplash.com/photo-1647892591880-58c55fd726d8?w=500&h=500&fit=crop&q=70&auto=format" alt="" />
+        <img aria-hidden="true" className={`${styles.deco} ${styles.decoHero2}`}
+          src="https://images.unsplash.com/photo-1607310073276-9f48dec47340?w=500&h=500&fit=crop&q=70&auto=format" alt="" />
+        <img aria-hidden="true" className={`${styles.deco} ${styles.decoHero3}`}
+          src="https://images.unsplash.com/photo-1620160573136-8e97a250aed2?w=400&h=400&fit=crop&q=70&auto=format" alt="" />
+        <img aria-hidden="true" className={`${styles.deco} ${styles.decoHero4}`}
+          src="https://images.unsplash.com/photo-1745944756461-3bb53ca8419f?w=400&h=400&fit=crop&q=70&auto=format" alt="" />
         <span className="tag">Weekly · Personalized · AI-Written</span>
         <h1 className={styles.heroTitle}>
           Know exactly what your<br />
@@ -127,20 +123,16 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* HOW IT WORKS — comics top-right, coins bottom-left */}
+      {/* HOW IT WORKS — comics top-right, coins bottom-left, video games mid-right, toys top-left */}
       <section className={styles.how}>
-        <img
-          aria-hidden="true"
-          className={`${styles.deco} ${styles.decoHow1}`}
-          src="https://images.unsplash.com/photo-1689277037704-49a09b66f27f?w=500&h=500&fit=crop&q=70&auto=format"
-          alt=""
-        />
-        <img
-          aria-hidden="true"
-          className={`${styles.deco} ${styles.decoHow2}`}
-          src="https://images.unsplash.com/photo-1643393670205-84815b8e7ff7?w=500&h=500&fit=crop&q=70&auto=format"
-          alt=""
-        />
+        <img aria-hidden="true" className={`${styles.deco} ${styles.decoHow1}`}
+          src="https://images.unsplash.com/photo-1689277037704-49a09b66f27f?w=500&h=500&fit=crop&q=70&auto=format" alt="" />
+        <img aria-hidden="true" className={`${styles.deco} ${styles.decoHow2}`}
+          src="https://images.unsplash.com/photo-1643393670205-84815b8e7ff7?w=500&h=500&fit=crop&q=70&auto=format" alt="" />
+        <img aria-hidden="true" className={`${styles.deco} ${styles.decoHow3}`}
+          src="https://images.unsplash.com/photo-1696382447240-d07dff640d8e?w=400&h=400&fit=crop&q=70&auto=format" alt="" />
+        <img aria-hidden="true" className={`${styles.deco} ${styles.decoHow4}`}
+          src="https://images.unsplash.com/photo-1606663889134-b1dedb5ed8b7?w=400&h=400&fit=crop&q=70&auto=format" alt="" />
         <div className="container">
           <h2 className={styles.sectionTitle}>Set it up in 2 minutes</h2>
           <div className={styles.steps}>
@@ -161,6 +153,10 @@ export default function Landing() {
 
       {/* NICHES — photo card grid */}
       <section className={styles.niches}>
+        <img aria-hidden="true" className={`${styles.deco} ${styles.decoNiches1}`}
+          src="https://images.unsplash.com/photo-1620160573136-8e97a250aed2?w=400&h=400&fit=crop&q=70&auto=format" alt="" />
+        <img aria-hidden="true" className={`${styles.deco} ${styles.decoNiches2}`}
+          src="https://images.unsplash.com/photo-1647892591880-58c55fd726d8?w=400&h=400&fit=crop&q=70&auto=format" alt="" />
         <div className="container" style={{ textAlign: 'center' }}>
           <h2 className={styles.sectionTitle}>Works for any collecting niche</h2>
           <p style={{ color: 'var(--muted)', fontSize: '1rem', maxWidth: 520, margin: '0 auto 2.5rem', lineHeight: 1.65 }}>
@@ -192,20 +188,16 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* PRICING — vintage toys left, video games right */}
+      {/* PRICING — vintage toys left, video games right, Pokémon top-right, sports cards bottom-left */}
       <section className={styles.pricing}>
-        <img
-          aria-hidden="true"
-          className={`${styles.deco} ${styles.decoPricing1}`}
-          src="https://images.unsplash.com/photo-1606663889134-b1dedb5ed8b7?w=500&h=500&fit=crop&q=70&auto=format"
-          alt=""
-        />
-        <img
-          aria-hidden="true"
-          className={`${styles.deco} ${styles.decoPricing2}`}
-          src="https://images.unsplash.com/photo-1696382447240-d07dff640d8e?w=500&h=500&fit=crop&q=70&auto=format"
-          alt=""
-        />
+        <img aria-hidden="true" className={`${styles.deco} ${styles.decoPricing1}`}
+          src="https://images.unsplash.com/photo-1606663889134-b1dedb5ed8b7?w=500&h=500&fit=crop&q=70&auto=format" alt="" />
+        <img aria-hidden="true" className={`${styles.deco} ${styles.decoPricing2}`}
+          src="https://images.unsplash.com/photo-1696382447240-d07dff640d8e?w=500&h=500&fit=crop&q=70&auto=format" alt="" />
+        <img aria-hidden="true" className={`${styles.deco} ${styles.decoPricing3}`}
+          src="https://images.unsplash.com/photo-1647892591880-58c55fd726d8?w=400&h=400&fit=crop&q=70&auto=format" alt="" />
+        <img aria-hidden="true" className={`${styles.deco} ${styles.decoPricing4}`}
+          src="https://images.unsplash.com/photo-1607310073276-9f48dec47340?w=400&h=400&fit=crop&q=70&auto=format" alt="" />
         <div className="container" style={{ textAlign: 'center' }}>
           <h2 className={styles.sectionTitle}>Simple pricing</h2>
           <div className={styles.priceCard}>

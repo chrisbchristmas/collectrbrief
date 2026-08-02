@@ -65,7 +65,7 @@
 .stepBody { color: var(--muted); font-size: 0.9rem; line-height: 1.65; }
 
 /* Niches */
-.niches { padding: 5rem 1.5rem; background: #f9f6f1; }
+.niches { padding: 5rem 1.5rem; background: #f9f6f1; position: relative; overflow: hidden; }
 .nicheGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -163,40 +163,82 @@
 
 /* Hero decos */
 .decoHero1 {
-  width: 320px; opacity: 0.13;
+  width: 320px; opacity: 0.15;
   top: -40px; right: -60px;
   transform: rotate(12deg);
 }
 .decoHero2 {
-  width: 260px; opacity: 0.10;
+  width: 260px; opacity: 0.12;
   bottom: 20px; left: -50px;
   transform: rotate(-8deg);
+}
+.decoHero3 {
+  width: 200px; opacity: 0.09;
+  top: 60px; left: 20px;
+  transform: rotate(5deg);
+}
+.decoHero4 {
+  width: 180px; opacity: 0.08;
+  bottom: 40px; right: 30px;
+  transform: rotate(-15deg);
 }
 
 /* How-it-works decos */
 .decoHow1 {
-  width: 280px; opacity: 0.10;
+  width: 280px; opacity: 0.12;
   top: 30px; right: -40px;
   transform: rotate(-10deg);
 }
 .decoHow2 {
-  width: 240px; opacity: 0.09;
+  width: 240px; opacity: 0.10;
   bottom: 20px; left: -30px;
   transform: rotate(7deg);
+}
+.decoHow3 {
+  width: 200px; opacity: 0.09;
+  top: 50%; right: 20px;
+  transform: translateY(-50%) rotate(6deg);
+}
+.decoHow4 {
+  width: 190px; opacity: 0.08;
+  top: 20px; left: 40px;
+  transform: rotate(-12deg);
+}
+
+/* Niches decos */
+.decoNiches1 {
+  width: 220px; opacity: 0.08;
+  top: 10px; right: -20px;
+  transform: rotate(8deg);
+}
+.decoNiches2 {
+  width: 190px; opacity: 0.07;
+  bottom: 10px; left: -20px;
+  transform: rotate(-6deg);
 }
 
 /* Pricing decos */
 .decoPricing1 {
-  width: 300px; opacity: 0.11;
+  width: 300px; opacity: 0.13;
   top: 20px; left: -50px;
   transform: rotate(-14deg);
 }
 .decoPricing2 {
-  width: 260px; opacity: 0.09;
+  width: 260px; opacity: 0.11;
   bottom: 10px; right: -40px;
   transform: rotate(10deg);
 }
+.decoPricing3 {
+  width: 210px; opacity: 0.09;
+  top: 40px; right: 60px;
+  transform: rotate(-7deg);
+}
+.decoPricing4 {
+  width: 190px; opacity: 0.08;
+  bottom: 50px; left: 40px;
+  transform: rotate(13deg);
+}
 
 @media (max-width: 700px) {
-  .deco { opacity: 0.07 !important; width: 180px !important; }
+  .deco { opacity: 0.07 !important; width: 140px !important; }
 }
