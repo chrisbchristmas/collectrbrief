@@ -161,84 +161,84 @@
   object-fit: contain;
 }
 
-/* Hero decos */
+/* Hero decos — top-right outside, bottom-left outside, center-right inset, upper-left inset */
 .decoHero1 {
-  width: 320px; opacity: 0.15;
-  top: -40px; right: -60px;
+  width: 260px; opacity: 0.15;
+  top: -20px; right: -70px;
   transform: rotate(12deg);
 }
 .decoHero2 {
-  width: 260px; opacity: 0.12;
-  bottom: 20px; left: -50px;
+  width: 220px; opacity: 0.11;
+  bottom: 60px; left: -60px;
   transform: rotate(-8deg);
 }
 .decoHero3 {
-  width: 200px; opacity: 0.09;
-  top: 60px; left: 20px;
-  transform: rotate(5deg);
+  width: 155px; opacity: 0.09;
+  top: 50%; right: 12px;
+  transform: translateY(-50%) rotate(6deg);
 }
 .decoHero4 {
-  width: 180px; opacity: 0.08;
-  bottom: 40px; right: 30px;
-  transform: rotate(-15deg);
+  width: 140px; opacity: 0.08;
+  top: 28%; left: 12px;
+  transform: rotate(-12deg);
 }
 
-/* How-it-works decos */
+/* How-it-works decos — top-right, center-left, bottom-right, bottom-left (all inset, no overlap) */
 .decoHow1 {
-  width: 280px; opacity: 0.12;
-  top: 30px; right: -40px;
+  width: 220px; opacity: 0.12;
+  top: 30px; right: 32px;
   transform: rotate(-10deg);
 }
 .decoHow2 {
-  width: 240px; opacity: 0.10;
-  bottom: 20px; left: -30px;
-  transform: rotate(7deg);
-}
-.decoHow3 {
-  width: 200px; opacity: 0.09;
-  top: 50%; right: 20px;
+  width: 200px; opacity: 0.10;
+  top: 50%; left: 28px;
   transform: translateY(-50%) rotate(6deg);
 }
+.decoHow3 {
+  width: 185px; opacity: 0.09;
+  bottom: 30px; right: 80px;
+  transform: rotate(9deg);
+}
 .decoHow4 {
-  width: 190px; opacity: 0.08;
-  top: 20px; left: 40px;
-  transform: rotate(-12deg);
+  width: 165px; opacity: 0.08;
+  bottom: 28px; left: 28%;
+  transform: rotate(-7deg);
 }
 
 /* Niches decos */
 .decoNiches1 {
-  width: 220px; opacity: 0.08;
-  top: 10px; right: -20px;
+  width: 200px; opacity: 0.08;
+  top: 12px; right: 20px;
   transform: rotate(8deg);
 }
 .decoNiches2 {
-  width: 190px; opacity: 0.07;
-  bottom: 10px; left: -20px;
+  width: 175px; opacity: 0.07;
+  bottom: 12px; left: 22px;
   transform: rotate(-6deg);
 }
 
-/* Pricing decos */
+/* Pricing decos — top-left inset, bottom-right inset, center-right, bottom-center (no stacking) */
 .decoPricing1 {
-  width: 300px; opacity: 0.13;
-  top: 20px; left: -50px;
-  transform: rotate(-14deg);
+  width: 240px; opacity: 0.13;
+  top: 28px; left: 36px;
+  transform: rotate(-13deg);
 }
 .decoPricing2 {
-  width: 260px; opacity: 0.11;
-  bottom: 10px; right: -40px;
+  width: 220px; opacity: 0.11;
+  bottom: 28px; right: 36px;
   transform: rotate(10deg);
 }
 .decoPricing3 {
-  width: 210px; opacity: 0.09;
-  top: 40px; right: 60px;
-  transform: rotate(-7deg);
+  width: 175px; opacity: 0.09;
+  top: 50%; right: 28px;
+  transform: translateY(-50%) rotate(-7deg);
 }
 .decoPricing4 {
-  width: 190px; opacity: 0.08;
-  bottom: 50px; left: 40px;
-  transform: rotate(13deg);
+  width: 160px; opacity: 0.08;
+  bottom: 36px; left: 38%;
+  transform: rotate(14deg);
 }
 
 @media (max-width: 700px) {
-  .deco { opacity: 0.07 !important; width: 140px !important; }
+  .deco { opacity: 0.07 !important; width: 120px !important; }
 }
