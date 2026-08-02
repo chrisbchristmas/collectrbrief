@@ -8,6 +8,7 @@ import subscribersRouter from './routes/subscribers.js';
 import webhooksRouter from './routes/webhooks.js';
 import adminRouter from './routes/admin.js';
 import publicRouter from './routes/public.js';
+import alertsRouter from './routes/alerts.js';
 import { scheduleBriefJob } from './jobs/sendBriefs.js';
 
 const app = express();
@@ -37,6 +38,7 @@ app.get('/api/config', (req, res) => res.json({
 app.use('/api/subscribers', subscribersRouter);
 app.use('/api/webhooks', webhooksRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/alerts', alertsRouter);
 
 // Public pages (shareable briefs, sample brief, SEO market pages)
 app.use('/', publicRouter);

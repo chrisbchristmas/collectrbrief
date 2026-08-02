@@ -77,3 +77,51 @@ export async function sendWelcome(toEmail, firstName) {
 
   return sendBrief(toEmail, subject, html, null);
 }
+
+/**
+ * Send a price alert notification email.
+ * @param {string} toEmail
+ * @param {string|null} firstName
+ * @param {object} alert  — { label, direction, threshold }
+ * @param {number} currentAvg — the current market avg that triggered the alert
+ * @param {string} dashUrl — link to the subscriber's dashboard
+ */
+export async function sendAlertNotification(toEmail, firstName, alert, currentAvg, dashUrl) {
+  const dir = alert.direction === 'above' ? 'above' : 'below';
+  const icon = alert.direction === 'above' ? '📈' : '📉';
+  const subject = `${icon} Alert: ${alert.label} is now ${dir} $${Number(alert.threshold).toLocaleString()}`;
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="font-family:Georgia,serif;background:#f9f6f1;margin:0;padding:0">
+  <div style="max-width:600px;margin:0 auto;padding:40px 24px">
+    <div style="text-align:center;margin-bottom:24px">
+      <span style="font-size:26px;font-weight:700;color:#1a1a1a;letter-spacing:-0.5px">CollectrBrief</span>
+      <p style="color:#888;font-size:13px;margin:4px 0">Price Alert</p>
+    </div>
+    <div style="background:${alert.direction === 'above' ? '#dcfce7' : '#fee2e2'};border-radius:8px;padding:20px 24px;margin-bottom:24px;text-align:center">
+      <div style="font-size:32px;margin-bottom:8px">${icon}</div>
+      <div style="font-size:20px;font-weight:700;color:${alert.direction === 'above' ? '#166534' : '#991b1b'}">
+        ${alert.label}
+      </div>
+      <div style="color:#444;font-size:15px;margin-top:8px">
+        Current market avg: <strong>$${Number(currentAvg).toLocaleString()}</strong>
+      </div>
+      <div style="color:#666;font-size:14px;margin-top:4px">
+        Your alert: ${dir} $${Number(alert.threshold).toLocaleString()}
+      </div>
+    </div>
+    <div style="text-align:center;margin-bottom:32px">
+      <a href="${dashUrl}" style="display:inline-block;background:#1a1a1a;color:#fff;padding:12px 28px;border-radius:6px;text-decoration:none;font-size:15px;font-weight:600">
+        View my dashboard →
+      </a>
+    </div>
+    <p style="color:#bbb;font-size:12px;text-align:center">CollectrBrief · This alert has been marked as triggered and won't fire again.</p>
+  </div>
+</body>
+</html>`;
+
+  return sendBrief(toEmail, subject, html, null);
+}

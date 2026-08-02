@@ -70,3 +70,22 @@ CREATE TABLE IF NOT EXISTS sample_briefs (
   html        TEXT NOT NULL,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- === v3 additions (idempotent) ===
+
+-- Price alerts: subscriber sets a threshold on any watchlist item
+CREATE TABLE IF NOT EXISTS price_alerts (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  subscriber_id   UUID NOT NULL REFERENCES subscribers(id) ON DELETE CASCADE,
+  label           TEXT NOT NULL,
+  keywords        TEXT NOT NULL,
+  direction       TEXT NOT NULL CHECK (direction IN ('above','below')),
+  threshold       NUMERIC(10,2) NOT NULL,
+  triggered_at    TIMESTAMPTZ,
+  dismissed_at    TIMESTAMPTZ,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_price_alerts_sub ON price_alerts(subscriber_id);
+
+-- Personalized categories: which niches to include in brief (empty = all)
+ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS categories JSONB NOT NULL DEFAULT '[]';

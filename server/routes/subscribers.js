@@ -95,7 +95,7 @@ router.post('/', async (req, res, next) => {
 router.get('/:id', requireMagicToken, async (req, res, next) => {
   try {
     const result = await query(
-      `SELECT id, email, first_name, niche, watchlist, subscription_status, created_at
+      `SELECT id, email, first_name, niche, watchlist, categories, subscription_status, created_at
        FROM subscribers WHERE id=$1 AND unsubscribed_at IS NULL`,
       [req.params.id]
     );
@@ -122,6 +122,11 @@ router.patch('/:id', requireMagicToken, async (req, res, next) => {
       }
       updates.push(`watchlist=$${idx++}`); values.push(JSON.stringify(watchlist));
     }
+    if (req.body.categories !== undefined) {
+      const cats = req.body.categories;
+      if (!Array.isArray(cats)) return res.status(400).json({ error: 'categories must be an array' });
+      updates.push(`categories=$${idx++}`); values.push(JSON.stringify(cats));
+    }
 
     if (updates.length === 0) return res.status(400).json({ error: 'Nothing to update' });
     updates.push(`updated_at=NOW()`);
@@ -135,6 +140,31 @@ router.patch('/:id', requireMagicToken, async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+// GET /api/subscribers/:id/history?token= — last 12 briefs for chart data
+router.get('/:id/history', requireMagicToken, async (req, res, next) => {
+  try {
+    const result = await query(
+      `SELECT id, week_of, metrics, status, sent_at,
+              raw_data->'items' AS items
+       FROM briefs
+       WHERE subscriber_id=$1 AND status IN ('sent','generated')
+       ORDER BY week_of DESC LIMIT 12`,
+      [req.params.id]
+    );
+    // Slim down: only return label + avg per item (no full sales array)
+    const history = result.rows.map(row => ({
+      id: row.id,
+      week_of: row.week_of,
+      metrics: row.metrics,
+      sent_at: row.sent_at,
+      items: Array.isArray(row.items)
+        ? row.items.map(i => ({ label: i.label, avg: i.trend?.avg ?? 0, trend: i.trend?.trend ?? 'stable', count: i.trend?.count ?? 0 }))
+        : [],
+    }));
+    res.json(history);
+  } catch (err) { next(err); }
 });
 
 // DELETE /api/subscribers/:id/unsubscribe

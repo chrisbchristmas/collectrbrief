@@ -1,0 +1,33 @@
+{
+  "id": 32142949,
+  "user_id": 111430290,
+  "subdomain": "em1284",
+  "domain": "collectrbrief.com",
+  "username": "unified_acct_USed6d34839e2206ff718fe7080befa7f1",
+  "ips": [],
+  "custom_spf": false,
+  "default": true,
+  "legacy": false,
+  "automatic_security": true,
+  "valid": false,
+  "dns": {
+    "mail_cname": {
+      "valid": false,
+      "type": "cname",
+      "host": "em1284.collectrbrief.com",
+      "data": "u111430290.wl041.sendgrid.net"
+    },
+    "dkim1": {
+      "valid": false,
+      "type": "cname",
+      "host": "s1._domainkey.collectrbrief.com",
+      "data": "s1.domainkey.u111430290.wl041.sendgrid.net"
+    },
+    "dkim2": {
+      "valid": false,
+      "type": "cname",
+      "host": "s2._domainkey.collectrbrief.com",
+      "data": "s2.domainkey.u111430290.wl041.sendgrid.net"
+    }
+  }
+}

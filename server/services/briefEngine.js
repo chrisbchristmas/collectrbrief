@@ -16,7 +16,7 @@ export async function generateBriefForSubscriber(subscriber, weekOf) {
 
   try {
     // 1. Fetch price data for each watchlist item
-    const itemResults = await fetchWatchlistData(subscriber.watchlist);
+    const itemResults = await fetchWatchlistData(subscriber.watchlist, subscriber.categories);
 
     // 2. Week-over-week metrics vs last week's brief + biggest mover + portfolio
     const metrics = await computeMetrics(subscriber, itemResults, weekOf);
@@ -32,6 +32,11 @@ export async function generateBriefForSubscriber(subscriber, weekOf) {
       `UPDATE briefs SET status='generated', raw_data=$1, generated_html=$2, llm_commentary=$3, metrics=$4
        WHERE id=$5`,
       [JSON.stringify({ items: itemResults }), html, commentary, JSON.stringify(metrics), briefId]
+    );
+
+    // 6. Check price alerts and fire notifications
+    await checkAndFireAlerts(subscriber, itemResults).catch(err =>
+      console.warn('[Alerts] Check failed:', err.message)
     );
 
     return { briefId, html, itemResults, commentary, metrics };
@@ -158,8 +163,14 @@ async function createBriefRecord(subscriberId, weekOf) {
   return res.rows[0].id;
 }
 
-async function fetchWatchlistData(watchlist) {
-  const items = Array.isArray(watchlist) ? watchlist : [];
+async function fetchWatchlistData(watchlist, categories = []) {
+  let items = Array.isArray(watchlist) ? watchlist : [];
+
+  // Filter by selected categories if subscriber has personalised their brief
+  if (Array.isArray(categories) && categories.length > 0) {
+    const filtered = items.filter(item => categories.includes(item.category));
+    if (filtered.length > 0) items = filtered; // fallback: include all if filter empties the list
+  }
 
   const results = await Promise.allSettled(
     items.map(async (item) => {
@@ -198,6 +209,7 @@ function renderBriefEmail(subscriber, itemResults, commentary, weekOf, metrics =
   const apiOrigin = process.env.API_ORIGIN || 'https://collectrbrief-api.onrender.com';
   const unsubUrl = `${clientOrigin}/unsubscribe?id=${subscriber.id}`;
   const prefsUrl = `${clientOrigin}/preferences?id=${subscriber.id}&token=${signToken(subscriber.id)}`;
+  const dashUrl = `${clientOrigin}/dashboard?id=${subscriber.id}&token=${signToken(subscriber.id)}`;
   const shareUrl = briefId ? `${apiOrigin}/b/${briefId}?t=${signToken(briefId)}` : null;
   const refUrl = `${clientOrigin}/subscribe?ref=${subscriber.id}`;
 
@@ -322,7 +334,7 @@ function renderBriefEmail(subscriber, itemResults, commentary, weekOf, metrics =
   <!-- Footer -->
   <div style="text-align:center;color:#bbb;font-size:12px;padding:16px 0">
     <p>You're receiving this because you subscribed to CollectrBrief.</p>
-    <p><a href="${unsubUrl}" style="color:#bbb">Unsubscribe</a> · <a href="${prefsUrl}" style="color:#bbb">Manage preferences</a>${shareUrl ? ` · <a href="${shareUrl}" style="color:#bbb">View in browser</a>` : ''}</p>
+    <p><a href="${unsubUrl}" style="color:#bbb">Unsubscribe</a> · <a href="${prefsUrl}" style="color:#bbb">Manage preferences</a> · <a href="${dashUrl}" style="color:#bbb">My dashboard</a>${shareUrl ? ` · <a href="${shareUrl}" style="color:#bbb">View in browser</a>` : ''}</p>
     <p>CollectrBrief · Personalized market intelligence for collectors</p>
   </div>
 
@@ -351,3 +363,42 @@ function weekLabel(dateStr) {
 
 function round1(n) { return Math.round(n * 10) / 10; }
 function round2(n) { return Math.round(n * 100) / 100; }
+
+/**
+ * Check price alerts for a subscriber against current item prices.
+ * Fires an email notification and marks triggered_at for each hit.
+ */
+async function checkAndFireAlerts(subscriber, itemResults) {
+  const { default: { sendAlertNotification } } = await import('./emailer.js');
+  const alerts = await query(
+    `SELECT id, label, keywords, direction, threshold
+     FROM price_alerts
+     WHERE subscriber_id=$1 AND triggered_at IS NULL AND dismissed_at IS NULL`,
+    [subscriber.id]
+  );
+  if (alerts.rows.length === 0) return;
+
+  const avgByLabel = Object.fromEntries(
+    itemResults.filter(i => i.trend?.count > 0).map(i => [i.label, i.trend.avg])
+  );
+
+  for (const alert of alerts.rows) {
+    const currentAvg = avgByLabel[alert.label];
+    if (currentAvg === undefined) continue;
+
+    const triggered =
+      (alert.direction === 'above' && currentAvg >= parseFloat(alert.threshold)) ||
+      (alert.direction === 'below' && currentAvg <= parseFloat(alert.threshold));
+
+    if (triggered) {
+      await query(
+        `UPDATE price_alerts SET triggered_at=NOW() WHERE id=$1`,
+        [alert.id]
+      );
+      const clientOrigin = process.env.CLIENT_ORIGIN || 'https://collectrbrief.com';
+      const dashUrl = `${clientOrigin}/dashboard?id=${subscriber.id}&token=${(await import('../utils/token.js')).signToken(subscriber.id)}`;
+      await sendAlertNotification(subscriber.email, subscriber.first_name, alert, currentAvg, dashUrl)
+        .catch(e => console.warn('[Alerts] Email send failed:', e.message));
+    }
+  }
+}
