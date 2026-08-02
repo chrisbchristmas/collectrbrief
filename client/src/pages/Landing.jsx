@@ -1,7 +1,48 @@
 import { useNavigate } from 'react-router-dom'
 import styles from './Landing.module.css'
 
-const NICHES = ['Sports Cards', 'Pokémon', 'Vintage Comics', 'Coins & Currency', 'Vintage Toys', 'Magic: The Gathering', 'Video Games', 'Sports Memorabilia', 'Other']
+const NICHES = [
+  {
+    label: 'Sports Cards',
+    emoji: '🏈',
+    photo: 'photo-1607310073276-9f48dec47340',
+  },
+  {
+    label: 'Pokémon',
+    emoji: '⚡',
+    photo: 'photo-1647892591880-58c55fd726d8',
+  },
+  {
+    label: 'Vintage Comics',
+    emoji: '💥',
+    photo: 'photo-1689277037704-49a09b66f27f',
+  },
+  {
+    label: 'Coins & Currency',
+    emoji: '🪙',
+    photo: 'photo-1643393670205-84815b8e7ff7',
+  },
+  {
+    label: 'Vintage Toys',
+    emoji: '🤖',
+    photo: 'photo-1606663889134-b1dedb5ed8b7',
+  },
+  {
+    label: 'Magic: The Gathering',
+    emoji: '🧙',
+    photo: 'photo-1620160573136-8e97a250aed2',
+  },
+  {
+    label: 'Video Games',
+    emoji: '🕹️',
+    photo: 'photo-1696382447240-d07dff640d8e',
+  },
+  {
+    label: 'Sports Memorabilia',
+    emoji: '🏆',
+    photo: 'photo-1745944756461-3bb53ca8419f',
+  },
+]
 
 export default function Landing() {
   const navigate = useNavigate()
@@ -94,12 +135,35 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* NICHES */}
+      {/* NICHES — photo card grid */}
       <section className={styles.niches}>
         <div className="container" style={{ textAlign: 'center' }}>
           <h2 className={styles.sectionTitle}>Works for any collecting niche</h2>
+          <p style={{ color: 'var(--muted)', fontSize: '1rem', maxWidth: 520, margin: '0 auto 2.5rem', lineHeight: 1.65 }}>
+            Whatever you collect, CollectrBrief tracks it. Pick your niche and we handle the rest.
+          </p>
           <div className={styles.nicheGrid}>
-            {NICHES.map(n => <span key={n} className="tag" style={{ margin: '0.3rem' }}>{n}</span>)}
+            {NICHES.map(n => (
+              <button
+                key={n.label}
+                className={styles.nicheCard}
+                onClick={() => navigate('/subscribe')}
+              >
+                <div className={styles.nicheImgWrap}>
+                  <img
+                    src={`https://images.unsplash.com/${n.photo}?w=400&h=300&fit=crop&q=80&auto=format`}
+                    alt={n.label}
+                    className={styles.nicheImg}
+                    loading="eager"
+                  />
+                  <div className={styles.nicheOverlay} />
+                </div>
+                <div className={styles.nicheLabel}>
+                  <span className={styles.nicheEmoji}>{n.emoji}</span>
+                  {n.label}
+                </div>
+              </button>
+            ))}
           </div>
         </div>
       </section>
