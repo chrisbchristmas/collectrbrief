@@ -11,27 +11,27 @@
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://collectrbrief-api.onrender.com/sample</loc>
+    <loc>https://www.collectrbrief.com/sample</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://collectrbrief-api.onrender.com/market/pokemon</loc>
+    <loc>https://www.collectrbrief.com/market/pokemon</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://collectrbrief-api.onrender.com/market/sports-cards</loc>
+    <loc>https://www.collectrbrief.com/market/sports-cards</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://collectrbrief-api.onrender.com/market/vintage-comics</loc>
+    <loc>https://www.collectrbrief.com/market/vintage-comics</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://collectrbrief-api.onrender.com/market/coins-currency</loc>
+    <loc>https://www.collectrbrief.com/market/coins-currency</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
