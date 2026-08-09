@@ -214,7 +214,7 @@ export default function Landing() {
             <button className="btn btn-primary" style={{ width: '100%', marginTop: '1.5rem', fontSize: '1.05rem' }} onClick={() => navigate('/subscribe')}>
               Start free 14-day trial
             </button>
-            <p style={{ color: '#888', fontSize: '0.85rem', marginTop: '0.75rem' }}>No credit card required to start</p>
+            <p style={{ color: '#888', fontSize: '0.85rem', marginTop: '0.75rem' }}>No charge for 14 days · Cancel anytime</p>
           </div>
         </div>
       </section>
