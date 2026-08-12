@@ -8,6 +8,7 @@ import Unsubscribe from './pages/Unsubscribe.jsx'
 import Preferences from './pages/Preferences.jsx'
 import Admin from './pages/Admin.jsx'
 import Dashboard from './pages/Dashboard.jsx'
+import Legal from './pages/Legal.jsx'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -21,6 +22,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/preferences" element={<Preferences />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/legal" element={<Legal />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>

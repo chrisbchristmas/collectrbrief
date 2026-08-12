@@ -223,6 +223,11 @@ export default function Landing() {
       <footer className={styles.footer}>
         <div className="container">
           <p>© {new Date().getFullYear()} CollectrBrief · <a href="mailto:hello@collectrbrief.com">hello@collectrbrief.com</a></p>
+          <p style={{ marginTop: '0.4rem', fontSize: '0.8rem' }}>
+            <a href="/legal#terms" style={{ color: '#888', marginRight: '1.25rem' }}>Terms of Service</a>
+            <a href="/legal#privacy" style={{ color: '#888', marginRight: '1.25rem' }}>Privacy Policy</a>
+            <a href="/legal#disclaimer" style={{ color: '#888' }}>Financial Disclaimer</a>
+          </p>
         </div>
       </footer>
     </div>
