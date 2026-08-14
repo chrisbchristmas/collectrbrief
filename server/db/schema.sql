@@ -89,3 +89,17 @@ CREATE INDEX IF NOT EXISTS idx_price_alerts_sub ON price_alerts(subscriber_id);
 
 -- Personalized categories: which niches to include in brief (empty = all)
 ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS categories JSONB NOT NULL DEFAULT '[]';
+
+-- === v4 additions (idempotent) ===
+
+-- Free price-check tool leads (landing page lead magnet)
+CREATE TABLE IF NOT EXISTS price_check_leads (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email       TEXT,
+  keywords    TEXT NOT NULL,
+  result      JSONB,
+  converted   BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_price_check_leads_email ON price_check_leads(email);
+

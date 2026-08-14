@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import styles from './Onboarding.module.css'
+import ExitIntent from '../components/ExitIntent.jsx'
 
 const NICHES = [
   'Sports Cards', 'Pokémon', 'Vintage Comics', 'Coins & Currency',
@@ -78,6 +79,7 @@ export default function Onboarding() {
 
   return (
     <div className={styles.page}>
+      <ExitIntent />
       <div className={styles.header}>
         <a href="/" className={styles.logo}>CollectrBrief</a>
       </div>

@@ -2,12 +2,65 @@
 // /b/:briefId?t=<token>   — shareable web version of a brief
 // /sample                 — latest public sample brief (landing page CTA)
 // /market/:nicheSlug      — weekly SEO market roundup page
+// POST /api/public/price-check — free single-item lookup lead magnet
 
 import { Router } from 'express';
 import { query } from '../db/index.js';
 import { verifyToken } from '../utils/token.js';
+import { fetchSoldSales, computeTrend } from '../services/cardhedge.js';
 
 const router = Router();
+
+// Very light in-memory rate limit: max 8 lookups per IP per hour.
+// Resets on process restart — acceptable for a free-tier abuse guard.
+const rateLimitMap = new Map();
+function isRateLimited(ip) {
+  const now = Date.now();
+  const windowMs = 60 * 60 * 1000;
+  const hits = (rateLimitMap.get(ip) || []).filter(t => now - t < windowMs);
+  hits.push(now);
+  rateLimitMap.set(ip, hits);
+  return hits.length > 8;
+}
+
+// POST /api/public/price-check — { keywords, email? }
+// Returns a single free trend lookup. If email is provided, stores the lead
+// for follow-up (no email is sent synchronously — keeps this endpoint fast).
+router.post('/api/public/price-check', async (req, res, next) => {
+  try {
+    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress;
+    if (isRateLimited(ip)) {
+      return res.status(429).json({ error: 'Too many lookups — try again in a bit.' });
+    }
+
+    const keywords = String(req.body?.keywords || '').trim().slice(0, 120);
+    const email = req.body?.email ? String(req.body.email).trim().toLowerCase().slice(0, 200) : null;
+
+    if (keywords.length < 3) {
+      return res.status(400).json({ error: 'Enter an item name (e.g. "PSA 10 Charizard Base Set")' });
+    }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: 'Invalid email address' });
+    }
+
+    const sales = await fetchSoldSales(keywords, { limit: 12, daysBack: 14 });
+    const trend = computeTrend(sales);
+    const result = {
+      keywords,
+      trend,
+      recentSales: sales.slice(0, 5).map(s => ({ title: s.title, price: s.price, source: s.source, date: s.date })),
+    };
+
+    await query(
+      `INSERT INTO price_check_leads (email, keywords, result) VALUES ($1, $2, $3)`,
+      [email, keywords, JSON.stringify(result)]
+    ).catch(err => console.warn('[PriceCheck] Lead insert failed:', err.message));
+
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+});
 
 // GET /b/:briefId — tokenized shareable brief
 router.get('/b/:briefId', async (req, res, next) => {

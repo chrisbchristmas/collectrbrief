@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 import styles from './Landing.module.css'
+import PriceCheck from '../components/PriceCheck.jsx'
 
 const NICHES = [
   {
@@ -46,9 +48,15 @@ const NICHES = [
 
 export default function Landing() {
   const navigate = useNavigate()
+  const [faqOpen, setFaqOpen] = useState(null)
 
   return (
     <div className={styles.page}>
+      {/* REFERRAL BANNER */}
+      <div className={styles.refBanner}>
+        🎁 Give a friend a month free, get a month free yourself — <a href="#" onClick={(e) => { e.preventDefault(); navigate('/subscribe') }}>details after signup</a>
+      </div>
+
       {/* NAV */}
       <nav className={styles.nav}>
         <div className={styles.logo}>CollectrBrief</div>
@@ -90,6 +98,8 @@ export default function Landing() {
             </a>
           </p>
         </div>
+
+        <PriceCheck onSubscribeClick={() => navigate('/subscribe')} />
       </section>
 
       {/* SAMPLE BRIEF PREVIEW */}
@@ -215,6 +225,64 @@ export default function Landing() {
               Start free 14-day trial
             </button>
             <p style={{ color: '#888', fontSize: '0.85rem', marginTop: '0.75rem' }}>No charge for 14 days · Cancel anytime</p>
+          </div>
+        </div>
+      </section>
+
+      {/* FOUNDER NOTE */}
+      <section className={styles.founder}>
+        <div className="container" style={{ maxWidth: 620 }}>
+          <p className={styles.founderEyebrow}>Why I built this</p>
+          <p className={styles.founderQuote}>
+            "I got tired of manually checking eBay sold listings every week to see what my own
+            cards were worth. Spreadsheets, alerts, tab-hopping — it was a chore. So I built the
+            tool I wanted: my exact items, real sold prices, a plain-English take, delivered every
+            Sunday morning. No noise, no generic 'market news.' Just the numbers that matter to
+            my collection."
+          </p>
+          <p className={styles.founderSign}>— Chris, founder of CollectrBrief</p>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className={styles.faq}>
+        <div className="container" style={{ maxWidth: 680 }}>
+          <h2 className={styles.sectionTitle}>Questions collectors actually ask</h2>
+          <div className={styles.faqList}>
+            {[
+              {
+                q: 'Is this financial advice?',
+                a: 'No. CollectrBrief provides market data and editorial commentary for informational purposes only — not financial, investment, or legal advice. Collectibles are speculative and illiquid. Always do your own research before buying or selling. See our full Financial Disclaimer for details.',
+              },
+              {
+                q: 'Can I cancel anytime?',
+                a: 'Yes, with one click from any brief email or your dashboard — no phone calls, no retention offers, no hoops. Cancel and you\'ll stop being charged at the end of your current billing period.',
+              },
+              {
+                q: "What if my item isn't tracked yet?",
+                a: 'You control your own watchlist — add any specific item by name (player, set, grade, edition). If sold-price data exists on eBay, Heritage, or Fanatics, we\'ll find it. Obscure or ungraded items may return thinner data, which we\'ll tell you plainly rather than fabricate a number.',
+              },
+              {
+                q: 'Is my data sold to anyone?',
+                a: 'No. We don\'t sell, rent, or share your data for third-party marketing, ever. Your email and watchlist exist solely to generate your weekly brief. Full details in our Privacy Policy.',
+              },
+              {
+                q: 'How is this different from just checking eBay myself?',
+                a: 'You could — and it would take you 20-30 minutes per item, every week, across multiple sites (eBay, Heritage, Fanatics), plus manually tracking whether prices are trending. CollectrBrief automates that entire process for up to 15 items and adds AI-written context on what the movement actually means.',
+              },
+            ].map((item, i) => (
+              <div key={i} className={styles.faqItem}>
+                <button
+                  className={styles.faqQuestion}
+                  onClick={() => setFaqOpen(faqOpen === i ? null : i)}
+                  aria-expanded={faqOpen === i}
+                >
+                  <span>{item.q}</span>
+                  <span className={styles.faqToggle}>{faqOpen === i ? '−' : '+'}</span>
+                </button>
+                {faqOpen === i && <p className={styles.faqAnswer}>{item.a}</p>}
+              </div>
+            ))}
           </div>
         </div>
       </section>

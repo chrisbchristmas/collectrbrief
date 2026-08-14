@@ -147,6 +147,92 @@
 /* Footer */
 .footer { padding: 2rem 1.5rem; text-align: center; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--border); }
 
+/* Referral banner */
+.refBanner {
+  background: #1a1a1a;
+  color: #f0ead9;
+  text-align: center;
+  font-size: 0.85rem;
+  padding: 0.6rem 1rem;
+}
+.refBanner a {
+  color: #f5d98a;
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+/* Founder note */
+.founder {
+  padding: 4rem 1.5rem;
+  background: #fff;
+  text-align: center;
+}
+.founderEyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #c9922a;
+  margin: 0 0 1rem;
+}
+.founderQuote {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.3rem;
+  line-height: 1.6;
+  color: var(--ink);
+  font-style: italic;
+  margin: 0 0 1.25rem;
+}
+.founderSign {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* FAQ */
+.faq {
+  padding: 4rem 1.5rem 5rem;
+  background: #f9f6f1;
+}
+.faqList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.faqItem {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.faqQuestion {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem 1.4rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.faqToggle {
+  font-size: 1.2rem;
+  color: #c9922a;
+  flex-shrink: 0;
+}
+.faqAnswer {
+  padding: 0 1.4rem 1.25rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+
 /* ── Background deco images ─────────────────────────────────────────────────
    Placed absolutely behind content. mix-blend-mode: multiply on cream (#f9f6f1)
    makes white/near-white areas vanish — only the coloured collectible shows.
