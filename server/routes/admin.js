@@ -106,13 +106,14 @@ router.get('/preview-brief/:subscriberId', async (req, res, next) => {
   }
 });
 
-// POST /api/admin/generate-public-content — regenerate sample brief + market pages now
+// POST /api/admin/generate-public-content — regenerate sample brief + market pages + trending now
 router.post('/generate-public-content', async (req, res, next) => {
   try {
-    const { generateSampleBrief, generateMarketPages } = await import('../services/publicContent.js');
+    const { generateSampleBrief, generateMarketPages, generateTrendingPage } = await import('../services/publicContent.js');
     const weekOf = getMostRecentSunday();
     await generateSampleBrief(weekOf);
     await generateMarketPages(weekOf);
+    await generateTrendingPage(weekOf);
     res.json({ success: true, weekOf });
   } catch (err) {
     next(err);

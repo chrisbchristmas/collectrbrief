@@ -5,7 +5,7 @@ import cron from 'node-cron';
 import { query } from '../db/index.js';
 import { generateBriefForSubscriber, buildSubjectLine } from '../services/briefEngine.js';
 import { sendBrief } from '../services/emailer.js';
-import { generateSampleBrief, generateMarketPages } from '../services/publicContent.js';
+import { generateSampleBrief, generateMarketPages, generateTrendingPage } from '../services/publicContent.js';
 
 const BATCH_SIZE = 10; // Process subscribers in batches to avoid hammering APIs
 const BATCH_DELAY_MS = 2000;
@@ -81,6 +81,7 @@ export async function runBriefJob() {
   try {
     await generateSampleBrief(weekOf);
     await generateMarketPages(weekOf);
+    await generateTrendingPage(weekOf);
   } catch (err) {
     console.error('[BriefJob] Public content generation failed:', err.message);
   }

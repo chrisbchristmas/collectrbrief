@@ -46,6 +46,29 @@ const NICHES = [
   },
 ]
 
+const FAQ_ITEMS = [
+  {
+    q: 'Is this financial advice?',
+    a: 'No. CollectrBrief provides market data and editorial commentary for informational purposes only — not financial, investment, or legal advice. Collectibles are speculative and illiquid. Always do your own research before buying or selling. See our full Financial Disclaimer for details.',
+  },
+  {
+    q: 'Can I cancel anytime?',
+    a: "Yes, with one click from any brief email or your dashboard — no phone calls, no retention offers, no hoops. Cancel and you'll stop being charged at the end of your current billing period.",
+  },
+  {
+    q: "What if my item isn't tracked yet?",
+    a: "You control your own watchlist — add any specific item by name (player, set, grade, edition). If sold-price data exists on eBay, Heritage, or Fanatics, we'll find it. Obscure or ungraded items may return thinner data, which we'll tell you plainly rather than fabricate a number.",
+  },
+  {
+    q: 'Is my data sold to anyone?',
+    a: "No. We don't sell, rent, or share your data for third-party marketing, ever. Your email and watchlist exist solely to generate your weekly brief. Full details in our Privacy Policy.",
+  },
+  {
+    q: 'How is this different from just checking eBay myself?',
+    a: 'You could — and it would take you 20-30 minutes per item, every week, across multiple sites (eBay, Heritage, Fanatics), plus manually tracking whether prices are trending. CollectrBrief automates that entire process for up to 15 items and adds AI-written context on what the movement actually means.',
+  },
+]
+
 export default function Landing() {
   const navigate = useNavigate()
   const [faqOpen, setFaqOpen] = useState(null)
@@ -95,6 +118,14 @@ export default function Landing() {
               style={{ color: '#666', fontSize: '0.95rem', textDecoration: 'underline' }}
             >
               See a real sample brief →
+            </a>
+            {' · '}
+            <a
+              href={`${import.meta.env.VITE_API_URL || 'https://collectrbrief-api.onrender.com'}/trending`}
+              target="_blank" rel="noopener noreferrer"
+              style={{ color: '#666', fontSize: '0.95rem', textDecoration: 'underline' }}
+            >
+              🔥 See this week's biggest movers →
             </a>
           </p>
         </div>
@@ -249,28 +280,7 @@ export default function Landing() {
         <div className="container" style={{ maxWidth: 680 }}>
           <h2 className={styles.sectionTitle}>Questions collectors actually ask</h2>
           <div className={styles.faqList}>
-            {[
-              {
-                q: 'Is this financial advice?',
-                a: 'No. CollectrBrief provides market data and editorial commentary for informational purposes only — not financial, investment, or legal advice. Collectibles are speculative and illiquid. Always do your own research before buying or selling. See our full Financial Disclaimer for details.',
-              },
-              {
-                q: 'Can I cancel anytime?',
-                a: 'Yes, with one click from any brief email or your dashboard — no phone calls, no retention offers, no hoops. Cancel and you\'ll stop being charged at the end of your current billing period.',
-              },
-              {
-                q: "What if my item isn't tracked yet?",
-                a: 'You control your own watchlist — add any specific item by name (player, set, grade, edition). If sold-price data exists on eBay, Heritage, or Fanatics, we\'ll find it. Obscure or ungraded items may return thinner data, which we\'ll tell you plainly rather than fabricate a number.',
-              },
-              {
-                q: 'Is my data sold to anyone?',
-                a: 'No. We don\'t sell, rent, or share your data for third-party marketing, ever. Your email and watchlist exist solely to generate your weekly brief. Full details in our Privacy Policy.',
-              },
-              {
-                q: 'How is this different from just checking eBay myself?',
-                a: 'You could — and it would take you 20-30 minutes per item, every week, across multiple sites (eBay, Heritage, Fanatics), plus manually tracking whether prices are trending. CollectrBrief automates that entire process for up to 15 items and adds AI-written context on what the movement actually means.',
-              },
-            ].map((item, i) => (
+            {FAQ_ITEMS.map((item, i) => (
               <div key={i} className={styles.faqItem}>
                 <button
                   className={styles.faqQuestion}
@@ -285,6 +295,20 @@ export default function Landing() {
             ))}
           </div>
         </div>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'FAQPage',
+              mainEntity: FAQ_ITEMS.map(item => ({
+                '@type': 'Question',
+                name: item.q,
+                acceptedAnswer: { '@type': 'Answer', text: item.a },
+              })),
+            }),
+          }}
+        />
       </section>
 
       {/* FOOTER */}

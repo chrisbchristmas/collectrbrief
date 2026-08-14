@@ -112,6 +112,20 @@ router.get('/market/:nicheSlug', async (req, res, next) => {
   }
 });
 
+// GET /trending — this week's biggest movers across all niches (SEO + shareable)
+router.get('/trending', async (req, res, next) => {
+  try {
+    const r = await query(`SELECT html FROM trending_pages ORDER BY week_of DESC LIMIT 1`);
+    if (r.rows.length === 0) {
+      return res.status(404).send(shell('Coming soon', '<p>The trending leaderboard is generated every Sunday. Check back shortly.</p>'));
+    }
+    res.setHeader('Content-Type', 'text/html');
+    res.send(r.rows[0].html);
+  } catch (err) {
+    next(err);
+  }
+});
+
 // Append a signup CTA banner to shared/sample brief HTML
 function injectCta(html) {
   const origin = process.env.CLIENT_ORIGIN || 'https://www.collectrbrief.com';

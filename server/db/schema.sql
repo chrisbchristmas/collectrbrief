@@ -103,3 +103,14 @@ CREATE TABLE IF NOT EXISTS price_check_leads (
 );
 CREATE INDEX IF NOT EXISTS idx_price_check_leads_email ON price_check_leads(email);
 
+-- Trial nudge email tracking — prevents duplicate sends across cron ticks
+ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS trial_day3_sent_at TIMESTAMPTZ;
+ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS trial_ending_sent_at TIMESTAMPTZ;
+
+-- Public "Trending This Week" leaderboard page (SEO + shareable), regenerated weekly
+CREATE TABLE IF NOT EXISTS trending_pages (
+  week_of     DATE PRIMARY KEY,
+  html        TEXT NOT NULL,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+

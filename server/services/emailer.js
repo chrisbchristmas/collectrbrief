@@ -125,3 +125,82 @@ export async function sendAlertNotification(toEmail, firstName, alert, currentAv
 
   return sendBrief(toEmail, subject, html, null);
 }
+
+/**
+ * Trial nudge — Day 3: encourage them to flesh out a thin watchlist.
+ */
+export async function sendTrialDay3Nudge(toEmail, firstName, watchlistCount, prefsUrl) {
+  const subject = `Quick tip: get more out of your CollectrBrief trial`;
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="font-family:Georgia,serif;background:#f9f6f1;margin:0;padding:0">
+  <div style="max-width:600px;margin:0 auto;padding:40px 24px">
+    <div style="text-align:center;margin-bottom:24px">
+      <span style="font-size:26px;font-weight:700;color:#1a1a1a;letter-spacing:-0.5px">CollectrBrief</span>
+    </div>
+    <h2 style="color:#1a1a1a;font-size:20px;margin-bottom:16px">Hey${firstName ? ` ${firstName}` : ''}, your first brief lands this Sunday</h2>
+    <p style="color:#444;line-height:1.7;font-size:16px">
+      You're tracking <strong>${watchlistCount} item${watchlistCount === 1 ? '' : 's'}</strong> right now.
+      ${watchlistCount < 5
+        ? `You can add up to 15 — the more specific items you track, the more useful your Sunday brief becomes.`
+        : `Nice list. Make sure every item is as specific as possible (grade, set, year) for the sharpest price matches.`}
+    </p>
+    <p style="color:#444;line-height:1.7;font-size:16px">
+      Two minutes now saves you a thinner first brief on Sunday.
+    </p>
+    <div style="text-align:center;margin:28px 0">
+      <a href="${prefsUrl}" style="display:inline-block;background:#1a1a1a;color:#fff;padding:12px 28px;border-radius:6px;text-decoration:none;font-size:15px;font-weight:600">
+        Review my watchlist →
+      </a>
+    </div>
+    <p style="color:#888;font-size:14px">Questions? Just reply — we read everything.</p>
+    <p style="color:#888;font-size:14px">— The CollectrBrief team</p>
+  </div>
+</body>
+</html>`;
+
+  return sendBrief(toEmail, subject, html, null);
+}
+
+/**
+ * Trial nudge — Day 12: trial ends in 2 days, highest-leverage conversion email.
+ */
+export async function sendTrialEndingNudge(toEmail, firstName, trialEndsAt) {
+  const endDate = new Date(trialEndsAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+  const subject = `Your CollectrBrief trial ends ${endDate} — here's what continues`;
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="font-family:Georgia,serif;background:#f9f6f1;margin:0;padding:0">
+  <div style="max-width:600px;margin:0 auto;padding:40px 24px">
+    <div style="text-align:center;margin-bottom:24px">
+      <span style="font-size:26px;font-weight:700;color:#1a1a1a;letter-spacing:-0.5px">CollectrBrief</span>
+    </div>
+    <h2 style="color:#1a1a1a;font-size:20px;margin-bottom:16px">Your trial ends ${endDate}${firstName ? `, ${firstName}` : ''}</h2>
+    <p style="color:#444;line-height:1.7;font-size:16px">
+      After that, your card will be charged $9.99/month and your weekly brief keeps arriving every Sunday —
+      no action needed on your end.
+    </p>
+    <div style="background:#fff;border:1px solid #eee;border-radius:8px;padding:20px 24px;margin:24px 0">
+      <p style="margin:0 0 10px;color:#1a1a1a;font-weight:700;font-size:15px">What continues:</p>
+      <ul style="margin:0;padding-left:20px;color:#555;font-size:14px;line-height:1.9">
+        <li>Weekly sold prices from eBay, Heritage & Fanatics for your items</li>
+        <li>AI-written buy / hold / watch take</li>
+        <li>Price alerts and trend tracking</li>
+        <li>Your full brief archive and dashboard</li>
+      </ul>
+    </div>
+    <p style="color:#444;line-height:1.7;font-size:16px">
+      Not for you? Cancel anytime before ${endDate} from any brief email or your dashboard — no charge, no questions.
+    </p>
+    <p style="color:#888;font-size:14px;margin-top:24px">Questions? Just reply — we read everything.</p>
+    <p style="color:#888;font-size:14px">— The CollectrBrief team</p>
+  </div>
+</body>
+</html>`;
+
+  return sendBrief(toEmail, subject, html, null);
+}

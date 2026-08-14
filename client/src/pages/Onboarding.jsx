@@ -7,6 +7,48 @@ const NICHES = [
   'Sports Cards', 'Pokémon', 'Vintage Comics', 'Coins & Currency',
   'Magic: The Gathering', 'Vintage Toys', 'Video Games', 'Sports Memorabilia', 'Other'
 ]
+
+// Popular starter picks per niche — pre-fills the watchlist so users don't
+// abandon at a blank text field. Keywords mirror the same well-tested search
+// terms used in the sample brief / SEO market pages.
+const STARTER_PICKS = {
+  'Sports Cards': [
+    { label: '2018 Luka Doncic Prizm PSA 10', keywords: 'luka doncic prizm 2018 PSA 10' },
+    { label: '2017 Patrick Mahomes Prizm PSA 10', keywords: 'patrick mahomes prizm 2017 PSA 10' },
+    { label: '1986 Fleer Michael Jordan PSA 8', keywords: '1986 fleer michael jordan PSA 8' },
+  ],
+  'Pokémon': [
+    { label: 'PSA 10 1999 Charizard Base Set Holo', keywords: 'charizard base set holo PSA 10' },
+    { label: 'PSA 10 Umbreon VMAX Alt Art', keywords: 'umbreon vmax alt art PSA 10' },
+    { label: 'PSA 10 1999 Blastoise Base Set Holo', keywords: 'blastoise base set holo PSA 10' },
+  ],
+  'Vintage Comics': [
+    { label: 'Amazing Fantasy #15 CGC 6.0', keywords: 'amazing fantasy 15 CGC 6.0' },
+    { label: 'Incredible Hulk #181 CGC 8.0', keywords: 'incredible hulk 181 CGC 8.0' },
+    { label: 'X-Men #1 1963 CGC 5.0', keywords: 'x-men 1 1963 CGC 5.0' },
+  ],
+  'Coins & Currency': [
+    { label: '1916-D Mercury Dime MS65', keywords: '1916-D mercury dime MS65' },
+    { label: '1909-S VDB Lincoln Cent MS65', keywords: '1909-S VDB lincoln cent MS65' },
+  ],
+  'Magic: The Gathering': [
+    { label: 'Black Lotus Alpha PSA 8', keywords: 'black lotus alpha PSA 8' },
+    { label: 'Mox Sapphire Unlimited', keywords: 'mox sapphire unlimited' },
+  ],
+  'Vintage Toys': [
+    { label: 'Star Wars Kenner Boba Fett 1979', keywords: 'star wars kenner boba fett 1979 rocket firing' },
+    { label: '1959 Barbie #1 Doll', keywords: '1959 barbie number 1 doll' },
+  ],
+  'Video Games': [
+    { label: 'Sealed Super Mario 64 WATA 9.4', keywords: 'super mario 64 sealed WATA 9.4' },
+    { label: 'Sealed Pokémon Red WATA 9.2', keywords: 'pokemon red sealed WATA 9.2' },
+  ],
+  'Sports Memorabilia': [
+    { label: 'Babe Ruth Signed Baseball PSA/DNA', keywords: 'babe ruth signed baseball PSA DNA' },
+    { label: 'Michael Jordan Signed Jersey UDA', keywords: 'michael jordan signed jersey UDA' },
+  ],
+}
+
 const STEPS = ['Your details', 'Your watchlist', 'Review & subscribe']
 
 export default function Onboarding() {
@@ -39,6 +81,15 @@ export default function Onboarding() {
 
   const removeItem = (i) => {
     setWatchlist(w => w.filter((_, idx) => idx !== i))
+  }
+
+  // One-click starter pack: fills the watchlist with popular picks for the
+  // subscriber's chosen niche, replacing any blank/unfilled placeholder rows.
+  const applyStarterPicks = () => {
+    const picks = STARTER_PICKS[form.niche]
+    if (!picks) return
+    const hasRealContent = watchlist.some(w => w.label.trim() || w.keywords.trim())
+    setWatchlist(hasRealContent ? [...watchlist, ...picks].slice(0, 15) : picks)
   }
 
   const validStep0 = form.email.includes('@') && form.niche
@@ -127,6 +178,12 @@ export default function Onboarding() {
             <div>
               <h2 className={styles.stepTitle}>Build your watchlist</h2>
               <p className={styles.stepSub}>Add the specific items you want tracked. Be as specific as possible — e.g. "PSA 10 1999 Charizard Base Set" not just "Charizard".</p>
+
+              {STARTER_PICKS[form.niche] && (
+                <button type="button" className={styles.quickAddBtn} onClick={applyStarterPicks}>
+                  ⚡ Quick-add popular {form.niche} picks
+                </button>
+              )}
 
               {watchlist.map((item, i) => (
                 <div key={i} className={styles.watchItem}>

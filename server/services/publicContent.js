@@ -67,6 +67,42 @@ export async function generateMarketPages(weekOf) {
   }
 }
 
+/**
+ * Regenerate the "Trending This Week" leaderboard — aggregates every item
+ * across all configured niches, ranked by absolute % move. Zero new API
+ * calls: reuses the same fetchItems() results the market pages already need,
+ * so this is a same-cost byproduct of the existing weekly generation pass.
+ */
+export async function generateTrendingPage(weekOf) {
+  const allRanked = [];
+
+  for (const niche of MARKET_NICHES) {
+    try {
+      const itemResults = await fetchItems(niche.items);
+      for (const item of itemResults) {
+        if (item.trend.count > 0) {
+          allRanked.push({ ...item, nicheName: niche.name, nicheSlug: niche.slug });
+        }
+      }
+    } catch (err) {
+      console.error(`[PublicContent] Trending fetch failed (${niche.slug}):`, err.message);
+    }
+  }
+
+  // Rank by absolute % move (pctChange from computeTrend), biggest movers first
+  allRanked.sort((a, b) => Math.abs(b.trend.pctChange || 0) - Math.abs(a.trend.pctChange || 0));
+
+  const html = renderTrendingPage(allRanked.slice(0, 12), weekOf);
+
+  await query(
+    `INSERT INTO trending_pages (week_of, html) VALUES ($1, $2)
+     ON CONFLICT (week_of) DO UPDATE SET html=EXCLUDED.html, created_at=NOW()`,
+    [weekOf, html]
+  );
+  console.log('[PublicContent] Trending page generated');
+  return html;
+}
+
 async function fetchItems(items) {
   const results = await Promise.allSettled(
     items.map(async (item) => {
@@ -145,6 +181,56 @@ function renderMarketPage(niche, itemResults, commentary, weekOf) {
   <div style="background:#fff;border:1px solid #eee;border-radius:8px;padding:24px;text-align:center;margin-bottom:24px">
     <p style="font-size:16px;font-weight:700;color:#1a1a1a;margin:0 0 4px">Track YOUR collection instead</p>
     <p style="color:#666;font-size:14px;margin:0 0 14px">Get this exact report for your specific items, in your inbox every Sunday. 14 days free.</p>
+    <a href="${origin}/subscribe" style="display:inline-block;background:#1a1a1a;color:#fff;font-weight:700;padding:12px 28px;border-radius:6px;text-decoration:none;font-size:15px">Start free trial →</a>
+  </div>
+</div>
+</body></html>`;
+}
+
+function renderTrendingPage(rankedItems, weekOf) {
+  const wLabel = label(weekOf);
+  const origin = process.env.CLIENT_ORIGIN || 'https://www.collectrbrief.com';
+  const trendIcon = { up: '📈', down: '📉', stable: '➡️' };
+
+  const rows = rankedItems.map((item, i) => `
+    <tr>
+      <td style="padding:16px 0;border-bottom:1px solid #eee">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+          <div>
+            <span style="color:#c9922a;font-weight:700;font-size:13px;margin-right:8px">#${i + 1}</span>
+            <span style="font-size:12px;color:#999;text-transform:uppercase;letter-spacing:0.04em">${esc(item.nicheName)}</span>
+            <h3 style="margin:4px 0 4px;font-size:17px;color:#1a1a1a">${trendIcon[item.trend.trend] || '➡️'} ${esc(item.label)}</h3>
+            <p style="margin:0;color:#666;font-size:13px">
+              ${item.trend.count} sales · avg <strong>$${item.trend.avg}</strong> · range $${item.trend.min}–$${item.trend.max}
+            </p>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:18px;font-weight:700;color:${(item.trend.pctChange || 0) >= 0 ? '#16a34a' : '#dc2626'}">
+              ${(item.trend.pctChange || 0) >= 0 ? '+' : ''}${item.trend.pctChange || 0}%
+            </div>
+          </div>
+        </div>
+      </td>
+    </tr>`).join('');
+
+  return `<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trending This Week — Biggest Collectibles Price Movers | CollectrBrief</title>
+<meta name="description" content="The biggest sold-price movers this week across sports cards, Pokémon, comics, and coins — real eBay and auction house data, ranked by percentage change. Updated every Sunday.">
+<link rel="canonical" href="${origin}/trending"></head>
+<body style="margin:0;padding:0;background:#f9f6f1;font-family:Georgia,serif">
+<div style="max-width:680px;margin:0 auto;padding:32px 16px">
+  <div style="margin-bottom:24px">
+    <a href="${origin}" style="font-size:22px;font-weight:700;color:#1a1a1a;text-decoration:none">CollectrBrief</a>
+    <h1 style="font-size:26px;color:#1a1a1a;margin:16px 0 4px">🔥 Trending This Week</h1>
+    <p style="color:#888;font-size:14px;margin:0">Week of ${wLabel} · Biggest movers across all niches, ranked by % change</p>
+  </div>
+  <div style="background:#fff;border-radius:8px;padding:8px 24px;margin-bottom:24px;border:1px solid #eee">
+    <table style="width:100%;border-collapse:collapse">${rows || '<tr><td style="padding:24px 0;color:#999;text-align:center">No movers to report yet — check back Sunday.</td></tr>'}</table>
+  </div>
+  <div style="background:#fff;border:1px solid #eee;border-radius:8px;padding:24px;text-align:center;margin-bottom:24px">
+    <p style="font-size:16px;font-weight:700;color:#1a1a1a;margin:0 0 4px">Track YOUR items, not the whole market</p>
+    <p style="color:#666;font-size:14px;margin:0 0 14px">Get personalized weekly moves for your specific collection, in your inbox every Sunday. 14 days free.</p>
     <a href="${origin}/subscribe" style="display:inline-block;background:#1a1a1a;color:#fff;font-weight:700;padding:12px 28px;border-radius:6px;text-decoration:none;font-size:15px">Start free trial →</a>
   </div>
 </div>

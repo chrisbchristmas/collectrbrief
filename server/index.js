@@ -10,6 +10,7 @@ import adminRouter from './routes/admin.js';
 import publicRouter from './routes/public.js';
 import alertsRouter from './routes/alerts.js';
 import { scheduleBriefJob } from './jobs/sendBriefs.js';
+import { scheduleTrialNudgeJob } from './jobs/trialNudges.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -52,6 +53,7 @@ app.use((err, req, res, _next) => {
 async function start() {
   await runMigrations();
   scheduleBriefJob();
+  scheduleTrialNudgeJob();
   app.listen(PORT, () => console.log(`[Server] CollectrBrief API listening on :${PORT}`));
 }
 

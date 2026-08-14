@@ -66,11 +66,12 @@ export function computeTrend(sales) {
 
   // Simple trend: compare first half vs second half avg
   let trend = 'stable';
+  let pctChange = 0;
   if (prices.length >= 4) {
     const mid = Math.floor(prices.length / 2);
     const olderAvg = prices.slice(0, mid).reduce((a, b) => a + b, 0) / mid;
     const newerAvg = prices.slice(mid).reduce((a, b) => a + b, 0) / (prices.length - mid);
-    const pctChange = ((newerAvg - olderAvg) / olderAvg) * 100;
+    pctChange = Math.round((((newerAvg - olderAvg) / olderAvg) * 100) * 10) / 10;
     if (pctChange > 8) trend = 'up';
     else if (pctChange < -8) trend = 'down';
     else trend = 'stable';
@@ -82,6 +83,7 @@ export function computeTrend(sales) {
     max: Math.round(max * 100) / 100,
     count: prices.length,
     trend,
+    pctChange,
   };
 }
 
