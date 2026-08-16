@@ -1,64 +1,92 @@
-// services/cardhedge.js — CardHedge pay-per-call API ($0.01/call)
-// api.cardhedger.com — aggregates eBay sold, Heritage, Fanatics
+// services/cardhedge.js — Sold-price data via The Card API (thecardapi.com)
+// Free tier: 5,000 records/day, 3-day lookback, no credit card required.
+// Note: file name kept as cardhedge.js for backward compatibility with existing
+// imports across the codebase (briefEngine.js, publicContent.js, routes/public.js);
+// the actual provider is now The Card API, not CardHedge.
 
-const BASE_URL = 'https://api.cardhedger.com';
-const API_KEY = process.env.CARDHEDGE_API_KEY;
+const BASE_URL = 'https://thecardapi.com/api/v1/market';
+const API_KEY = process.env.CARDHEDGE_API_KEY; // holds a thecardapi.com "tca_..." key
 
 /**
- * Fetch recent sold sales for a keyword from CardHedge.
+ * Fetch recent sold sales for a keyword from The Card API.
  * Returns an array of { title, price, date, source, url } objects.
  */
 export async function fetchSoldSales(keywords, options = {}) {
   const { limit = 20, daysBack = 7 } = options;
 
   if (!API_KEY) {
-    console.warn('[CardHedge] No API key — returning mock data');
+    console.warn('[CardData] No API key — returning mock data');
     return getMockSales(keywords);
   }
 
+  // Free tier is capped at a 3-day lookback; requesting more than the plan
+  // allows returns a 422, so clamp client-side rather than surface an error.
+  const effectiveDaysBack = Math.min(daysBack, 3);
+  const dateFrom = new Date(Date.now() - effectiveDaysBack * 86400000).toISOString().split('T')[0];
+
   const params = new URLSearchParams({
     q: keywords,
-    limit: String(limit),
-    days: String(daysBack),
+    date_from: dateFrom,
+    limit: String(Math.min(limit, 1000)),
+    sort: 'date_desc',
   });
 
-  const res = await fetch(`${BASE_URL}/v1/sold?${params}`, {
+  const res = await fetch(`${BASE_URL}/sales?${params}`, {
     headers: {
-      'Authorization': `Bearer ${API_KEY}`,
-      'Content-Type': 'application/json',
+      'x-market-api-key': API_KEY,
     },
     signal: AbortSignal.timeout(15000),
   });
 
+  if (res.status === 429) {
+    console.warn('[CardData] Daily rate limit reached — falling back to mock data');
+    return getMockSales(keywords);
+  }
+
   if (!res.ok) {
     const body = await res.text();
-    throw new Error(`CardHedge API ${res.status}: ${body.slice(0, 200)}`);
+    throw new Error(`The Card API ${res.status}: ${body.slice(0, 200)}`);
   }
 
   const json = await res.json();
-  // Normalise to a consistent shape regardless of their response schema
-  const sales = (json.results || json.data || json.sales || []).map(item => ({
-    title: item.title || item.name || keywords,
-    price: parseFloat(item.price || item.sold_price || item.amount || 0),
-    date: item.date || item.sold_date || item.ended_at || null,
-    source: item.source || item.platform || 'eBay',
+  const records = json.data || json.results || [];
+
+  // Normalise to the shape the rest of the app expects (title, price, date, source, url)
+  const sales = records.map(item => ({
+    title: item.title || keywords,
+    price: parseFloat(item.price || 0),
+    date: item.sold_at || item.date || null,
+    source: normalisePlatform(item.platform),
     url: item.url || item.listing_url || null,
   }));
 
   return sales;
 }
 
+function normalisePlatform(platform) {
+  const map = {
+    ebay: 'eBay',
+    tcgplayer: 'TCGplayer',
+    goldin: 'Goldin',
+    lelands: "Lelands",
+    scp: 'SCP Auctions',
+    hakes: "Hake's",
+    rea: 'REA',
+  };
+  return map[String(platform || '').toLowerCase()] || (platform || 'Unknown');
+}
+
 /**
  * Compute simple trend metrics from a sales array.
- * Returns { avg, min, max, count, trend }
+ * Returns { avg, min, max, count, trend, pctChange }
  */
 export function computeTrend(sales) {
   if (!sales || sales.length === 0) {
-    return { avg: 0, min: 0, max: 0, count: 0, trend: 'insufficient data' };
+    return { avg: 0, min: 0, max: 0, count: 0, trend: 'insufficient data', pctChange: 0 };
   }
 
   const prices = sales.map(s => s.price).filter(p => p > 0);
-  if (prices.length === 0) return { avg: 0, min: 0, max: 0, count: 0, trend: 'insufficient data' };
+  if (prices.length === 0) return { avg: 0, min: 0, max: 0, count: 0, trend: 'insufficient data', pctChange: 0 };
 
   const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
   const min = Math.min(...prices);
