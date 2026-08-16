@@ -47,8 +47,27 @@ function PortfolioBlock({ history }) {
   const pf = metrics.portfolio
   const wowPct = metrics.wowPct
 
+  // Engagement streak: consecutive sent briefs counting back from the most recent.
+  // Pure computed stat from brief history already fetched — no new data needed.
+  const streak = (() => {
+    let count = 0
+    for (const brief of history) {
+      if (brief.sent_at) count++
+      else break
+    }
+    return count
+  })()
+
   return (
     <div>
+      {streak >= 2 && (
+        <div style={{
+          background: '#fef3c7', borderRadius: 8, padding: '10px 16px', marginBottom: 16,
+          textAlign: 'center', fontSize: 13, color: '#92400e', fontWeight: 600,
+        }}>
+          🔥 {streak}-week streak — you've tracked your collection {streak} weeks running
+        </div>
+      )}
       {typeof wowPct === 'number' && (
         <div style={{
           background: wowPct >= 0 ? '#dcfce7' : '#fee2e2',

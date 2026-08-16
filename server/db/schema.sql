@@ -114,3 +114,11 @@ CREATE TABLE IF NOT EXISTS trending_pages (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- === v5 additions (idempotent) ===
+
+-- Cancellation feedback: optional reason captured at unsubscribe time
+ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS cancellation_reason TEXT;
+
+-- Win-back email tracking — 30 days post-cancellation, one-shot
+ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS winback_sent_at TIMESTAMPTZ;
+

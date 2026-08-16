@@ -126,6 +126,37 @@ router.get('/trending', async (req, res, next) => {
   }
 });
 
+// GET /sitemap.xml — sitemap for THIS domain's own content pages (sample, market/*, trending).
+// Kept separate from the client's sitemap.xml since these pages are served from
+// collectrbrief-api.onrender.com, a different origin — Google Search Console
+// requires a distinct verified property + sitemap per origin.
+router.get('/sitemap.xml', async (req, res, next) => {
+  try {
+    const apiOrigin = process.env.API_ORIGIN || 'https://collectrbrief-api.onrender.com';
+    const nicheRows = await query(`SELECT DISTINCT niche_slug FROM market_pages`);
+    const urls = [
+      { loc: `${apiOrigin}/sample`, changefreq: 'weekly', priority: '0.8' },
+      { loc: `${apiOrigin}/trending`, changefreq: 'weekly', priority: '0.8' },
+      ...nicheRows.rows.map(r => ({ loc: `${apiOrigin}/market/${r.niche_slug}`, changefreq: 'weekly', priority: '0.7' })),
+    ];
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.map(u => `  <url>\n    <loc>${u.loc}</loc>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n  </url>`).join('\n')}
+</urlset>`;
+    res.setHeader('Content-Type', 'application/xml');
+    res.send(xml);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /robots.txt — points crawlers at this domain's own sitemap
+router.get('/robots.txt', (req, res) => {
+  const apiOrigin = process.env.API_ORIGIN || 'https://collectrbrief-api.onrender.com';
+  res.setHeader('Content-Type', 'text/plain');
+  res.send(`User-agent: *\nAllow: /sample\nAllow: /market/\nAllow: /trending\nDisallow: /b/\nDisallow: /api/\nSitemap: ${apiOrigin}/sitemap.xml\n`);
+});
+
 // Append a signup CTA banner to shared/sample brief HTML
 function injectCta(html) {
   const origin = process.env.CLIENT_ORIGIN || 'https://www.collectrbrief.com';

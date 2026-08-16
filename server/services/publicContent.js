@@ -131,10 +131,15 @@ function itemTable(itemResults) {
 
 function renderPublicBrief(itemResults, commentary, weekOf) {
   const wLabel = label(weekOf);
+  const origin = process.env.CLIENT_ORIGIN || 'https://www.collectrbrief.com';
+  const apiOrigin = process.env.API_ORIGIN || 'https://collectrbrief-api.onrender.com';
+  const pageUrl = `${apiOrigin}/sample`;
+  const desc = `A real example of the personalized weekly market brief CollectrBrief subscribers receive — live sold prices, trends, and AI market commentary.`;
   return `<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Sample Brief — Week of ${wLabel} · CollectrBrief</title>
-<meta name="description" content="A real example of the personalized weekly market brief CollectrBrief subscribers receive — live sold prices, trends, and AI market commentary."></head>
+<meta name="description" content="${desc}">
+<link rel="canonical" href="${pageUrl}">${ogMeta({ url: pageUrl, title: `Sample Brief — Week of ${wLabel}`, description: desc })}</head>
 <body style="margin:0;padding:0;background:#f9f6f1;font-family:Georgia,serif">
 <div style="max-width:620px;margin:0 auto;padding:32px 16px">
   <div style="text-align:center;margin-bottom:8px">
@@ -151,6 +156,7 @@ function renderPublicBrief(itemResults, commentary, weekOf) {
     <h2 style="margin:0 0 16px;font-size:16px;text-transform:uppercase;letter-spacing:1px;color:#aaa">Market Take</h2>
     <div style="color:#e8e4dc">${commentary.split(/\n\n+/).map(p => `<p style="line-height:1.7;font-size:15px">${esc(p)}</p>`).join('')}</div>
   </div>` : ''}
+  ${shareButtons(pageUrl, `A real weekly CollectrBrief sample — sold prices + AI market takes for collectibles`)}
 </div>
 </body></html>`;
 }
@@ -158,11 +164,14 @@ function renderPublicBrief(itemResults, commentary, weekOf) {
 function renderMarketPage(niche, itemResults, commentary, weekOf) {
   const wLabel = label(weekOf);
   const origin = process.env.CLIENT_ORIGIN || 'https://www.collectrbrief.com';
+  const apiOrigin = process.env.API_ORIGIN || 'https://collectrbrief-api.onrender.com';
+  const pageUrl = `${apiOrigin}/market/${niche.slug}`;
+  const desc = `${niche.name} price trends for the week of ${wLabel}: real sold prices from eBay and auction houses with AI market analysis. Updated every Sunday.`;
   return `<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(niche.name)} Market Report — Week of ${wLabel} | CollectrBrief</title>
-<meta name="description" content="${esc(niche.name)} price trends for the week of ${wLabel}: real sold prices from eBay and auction houses with AI market analysis. Updated every Sunday.">
-<link rel="canonical" href="https://collectrbrief-api.onrender.com/market/${niche.slug}"></head>
+<meta name="description" content="${esc(desc)}">
+<link rel="canonical" href="${pageUrl}">${ogMeta({ url: pageUrl, title: `${niche.name} Market Report — Week of ${wLabel}`, description: desc })}</head>
 <body style="margin:0;padding:0;background:#f9f6f1;font-family:Georgia,serif">
 <div style="max-width:680px;margin:0 auto;padding:32px 16px">
   <div style="margin-bottom:24px">
@@ -178,6 +187,7 @@ function renderMarketPage(niche, itemResults, commentary, weekOf) {
     <h2 style="margin:0 0 16px;font-size:15px;text-transform:uppercase;letter-spacing:1px;color:#aaa">This Week's Take</h2>
     <div style="color:#e8e4dc">${commentary.split(/\n\n+/).map(p => `<p style="line-height:1.7;font-size:15px">${esc(p)}</p>`).join('')}</div>
   </div>` : ''}
+  ${shareButtons(pageUrl, `${niche.name} price trends this week — real sold prices from eBay & auction houses`)}
   <div style="background:#fff;border:1px solid #eee;border-radius:8px;padding:24px;text-align:center;margin-bottom:24px">
     <p style="font-size:16px;font-weight:700;color:#1a1a1a;margin:0 0 4px">Track YOUR collection instead</p>
     <p style="color:#666;font-size:14px;margin:0 0 14px">Get this exact report for your specific items, in your inbox every Sunday. 14 days free.</p>
@@ -190,6 +200,9 @@ function renderMarketPage(niche, itemResults, commentary, weekOf) {
 function renderTrendingPage(rankedItems, weekOf) {
   const wLabel = label(weekOf);
   const origin = process.env.CLIENT_ORIGIN || 'https://www.collectrbrief.com';
+  const apiOrigin = process.env.API_ORIGIN || 'https://collectrbrief-api.onrender.com';
+  const pageUrl = `${apiOrigin}/trending`;
+  const desc = `The biggest sold-price movers this week across sports cards, Pokémon, comics, and coins — real eBay and auction house data, ranked by percentage change. Updated every Sunday.`;
   const trendIcon = { up: '📈', down: '📉', stable: '➡️' };
 
   const rows = rankedItems.map((item, i) => `
@@ -216,8 +229,8 @@ function renderTrendingPage(rankedItems, weekOf) {
   return `<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Trending This Week — Biggest Collectibles Price Movers | CollectrBrief</title>
-<meta name="description" content="The biggest sold-price movers this week across sports cards, Pokémon, comics, and coins — real eBay and auction house data, ranked by percentage change. Updated every Sunday.">
-<link rel="canonical" href="${origin}/trending"></head>
+<meta name="description" content="${esc(desc)}">
+<link rel="canonical" href="${pageUrl}">${ogMeta({ url: pageUrl, title: 'Trending This Week — Biggest Collectibles Price Movers', description: desc })}</head>
 <body style="margin:0;padding:0;background:#f9f6f1;font-family:Georgia,serif">
 <div style="max-width:680px;margin:0 auto;padding:32px 16px">
   <div style="margin-bottom:24px">
@@ -228,6 +241,7 @@ function renderTrendingPage(rankedItems, weekOf) {
   <div style="background:#fff;border-radius:8px;padding:8px 24px;margin-bottom:24px;border:1px solid #eee">
     <table style="width:100%;border-collapse:collapse">${rows || '<tr><td style="padding:24px 0;color:#999;text-align:center">No movers to report yet — check back Sunday.</td></tr>'}</table>
   </div>
+  ${shareButtons(pageUrl, `This week's biggest collectibles price movers — real sold prices, ranked`)}
   <div style="background:#fff;border:1px solid #eee;border-radius:8px;padding:24px;text-align:center;margin-bottom:24px">
     <p style="font-size:16px;font-weight:700;color:#1a1a1a;margin:0 0 4px">Track YOUR items, not the whole market</p>
     <p style="color:#666;font-size:14px;margin:0 0 14px">Get personalized weekly moves for your specific collection, in your inbox every Sunday. 14 days free.</p>
@@ -242,4 +256,34 @@ function esc(str) {
 }
 function label(dateStr) {
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+}
+
+// Shared Open Graph + Twitter Card meta tags for content pages. Ensures shares
+// on Reddit/Twitter/Discord/Facebook render a rich preview instead of a bare link.
+function ogMeta({ url, title, description, image }) {
+  const img = image || 'https://images.unsplash.com/photo-1607310073276-9f48dec47340?w=1200&h=630&fit=crop&q=80&auto=format';
+  return `
+<meta property="og:type" content="website">
+<meta property="og:url" content="${esc(url)}">
+<meta property="og:site_name" content="CollectrBrief">
+<meta property="og:title" content="${esc(title)}">
+<meta property="og:description" content="${esc(description)}">
+<meta property="og:image" content="${esc(img)}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${esc(title)}">
+<meta name="twitter:description" content="${esc(description)}">
+<meta name="twitter:image" content="${esc(img)}">`;
+}
+
+// One-line social share buttons (Twitter/X + Reddit share-intent links, no JS/cost)
+function shareButtons(url, text) {
+  const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+  const redditUrl = `https://www.reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(text)}`;
+  return `
+  <div style="text-align:center;margin:16px 0 24px">
+    <a href="${twitterUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin:0 6px;padding:8px 16px;background:#000;color:#fff;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600">Share on X</a>
+    <a href="${redditUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin:0 6px;padding:8px 16px;background:#ff4500;color:#fff;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600">Share on Reddit</a>
+  </div>`;
 }

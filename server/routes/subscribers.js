@@ -168,11 +168,13 @@ router.get('/:id/history', requireMagicToken, async (req, res, next) => {
 });
 
 // DELETE /api/subscribers/:id/unsubscribe
+// Body: { reason?: string } — optional cancellation feedback
 router.delete('/:id/unsubscribe', async (req, res, next) => {
   try {
+    const reason = req.body?.reason ? String(req.body.reason).slice(0, 500) : null;
     const result = await query(
-      `UPDATE subscribers SET unsubscribed_at=NOW() WHERE id=$1 RETURNING email, stripe_subscription_id`,
-      [req.params.id]
+      `UPDATE subscribers SET unsubscribed_at=NOW(), cancellation_reason=$2 WHERE id=$1 RETURNING email, stripe_subscription_id`,
+      [req.params.id, reason]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
 

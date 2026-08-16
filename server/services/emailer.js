@@ -204,3 +204,39 @@ export async function sendTrialEndingNudge(toEmail, firstName, trialEndsAt) {
 
   return sendBrief(toEmail, subject, html, null);
 }
+
+/**
+ * Win-back email — sent once, 30 days after cancellation.
+ */
+export async function sendWinBackEmail(toEmail, firstName, resubscribeUrl) {
+  const subject = `Here's what you've missed on CollectrBrief`;
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="font-family:Georgia,serif;background:#f9f6f1;margin:0;padding:0">
+  <div style="max-width:600px;margin:0 auto;padding:40px 24px">
+    <div style="text-align:center;margin-bottom:24px">
+      <span style="font-size:26px;font-weight:700;color:#1a1a1a;letter-spacing:-0.5px">CollectrBrief</span>
+    </div>
+    <h2 style="color:#1a1a1a;font-size:20px;margin-bottom:16px">It's been a month${firstName ? `, ${firstName}` : ''} — here's what's happened</h2>
+    <p style="color:#444;line-height:1.7;font-size:16px">
+      The market hasn't stood still. Sold prices have kept moving across sports cards, Pokémon, comics, and coins —
+      and your specific items may have moved with them.
+    </p>
+    <p style="color:#444;line-height:1.7;font-size:16px">
+      Coming back takes 30 seconds — same watchlist setup, same $9.99/month, 14 days free again.
+    </p>
+    <div style="text-align:center;margin:28px 0">
+      <a href="${resubscribeUrl}" style="display:inline-block;background:#1a1a1a;color:#fff;padding:12px 28px;border-radius:6px;text-decoration:none;font-size:15px;font-weight:600">
+        Restart my brief →
+      </a>
+    </div>
+    <p style="color:#888;font-size:14px">This is the only email you'll get about this — no further follow-ups.</p>
+    <p style="color:#888;font-size:14px">— The CollectrBrief team</p>
+  </div>
+</body>
+</html>`;
+
+  return sendBrief(toEmail, subject, html, null);
+}

@@ -1,11 +1,9 @@
-// jobs/trialNudges.js — Day 3 "build your watchlist" + Day 12 "trial ending" emails
-// Runs daily. Uses created_at (checkout starts a 14-day Stripe trial) rather than
-// a separate trial_ends_at column, since that field isn't populated by the
-// current checkout flow (Stripe manages the actual billing trial).
+// jobs/trialNudges.js — Day 3 "build your watchlist" + Day 12 "trial ending" +
+// 30-day post-cancellation win-back emails. Runs daily.
 
 import cron from 'node-cron';
 import { query } from '../db/index.js';
-import { sendTrialDay3Nudge, sendTrialEndingNudge } from '../services/emailer.js';
+import { sendTrialDay3Nudge, sendTrialEndingNudge, sendWinBackEmail } from '../services/emailer.js';
 import { signToken } from '../utils/token.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -20,7 +18,7 @@ export function scheduleTrialNudgeJob() {
 }
 
 export async function runTrialNudgeJob() {
-  const stats = { day3Sent: 0, endingSent: 0, failed: 0 };
+  const stats = { day3Sent: 0, endingSent: 0, winbackSent: 0, failed: 0 };
 
   // --- Day 3 nudge: created 2-4 days ago, still trialing, not yet sent ---
   try {
@@ -78,6 +76,33 @@ export async function runTrialNudgeJob() {
     console.error('[TrialNudges] Ending query failed:', err.message);
   }
 
-  console.log(`[TrialNudges] Done. Day3: ${stats.day3Sent} | Ending: ${stats.endingSent} | Failed: ${stats.failed}`);
+  // --- Win-back: unsubscribed 29-31 days ago, never sent a win-back email ---
+  try {
+    const winbackCandidates = await query(
+      `SELECT id, email, first_name
+       FROM subscribers
+       WHERE unsubscribed_at IS NOT NULL
+         AND winback_sent_at IS NULL
+         AND unsubscribed_at <= NOW() - INTERVAL '30 days'
+         AND unsubscribed_at >= NOW() - INTERVAL '32 days'`
+    );
+
+    for (const sub of winbackCandidates.rows) {
+      try {
+        const clientOrigin = process.env.CLIENT_ORIGIN || 'https://www.collectrbrief.com';
+        const resubscribeUrl = `${clientOrigin}/subscribe`;
+        await sendWinBackEmail(sub.email, sub.first_name, resubscribeUrl);
+        await query(`UPDATE subscribers SET winback_sent_at = NOW() WHERE id=$1`, [sub.id]);
+        stats.winbackSent++;
+      } catch (err) {
+        stats.failed++;
+        console.error(`[TrialNudges] Winback failed for ${sub.email}:`, err.message);
+      }
+    }
+  } catch (err) {
+    console.error('[TrialNudges] Winback query failed:', err.message);
+  }
+
+  console.log(`[TrialNudges] Done. Day3: ${stats.day3Sent} | Ending: ${stats.endingSent} | Winback: ${stats.winbackSent} | Failed: ${stats.failed}`);
   return stats;
 }
