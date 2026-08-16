@@ -100,6 +100,16 @@ export default function PriceCheck({ onSubscribeClick }) {
               <strong>${s.price.toLocaleString()}</strong>
             </div>
           ))}
+          {result.insights?.gradingPremium && (
+            <div style={{ marginTop: '0.6rem', padding: '0.55rem 0.8rem', background: '#eef2ff', borderRadius: 8, fontSize: '0.82rem', color: '#3730a3' }}>
+              💎 <strong>{result.insights.gradingPremium.highGrade}</strong> sells for <strong>+{result.insights.gradingPremium.premiumPct}%</strong> over {result.insights.gradingPremium.lowGrade} in this data
+            </div>
+          )}
+          {result.insights?.marketplaceSpread && (
+            <div style={{ marginTop: '0.4rem', padding: '0.55rem 0.8rem', background: '#fefce8', borderRadius: 8, fontSize: '0.82rem', color: '#854d0e' }}>
+              ⚖️ Avg <strong>${result.insights.marketplaceSpread.highAvg.toLocaleString()}</strong> on {result.insights.marketplaceSpread.highSource} vs <strong>${result.insights.marketplaceSpread.lowAvg.toLocaleString()}</strong> on {result.insights.marketplaceSpread.lowSource} — a {result.insights.marketplaceSpread.spreadPct}% gap
+            </div>
+          )}
           <div className={styles.upsell}>
             <p>This was one item, checked once. CollectrBrief tracks up to 15 items automatically, every Sunday, with trend alerts.</p>
             <button className="btn btn-primary" onClick={onSubscribeClick} style={{ width: '100%' }}>

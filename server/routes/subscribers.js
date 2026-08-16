@@ -95,7 +95,7 @@ router.post('/', async (req, res, next) => {
 router.get('/:id', requireMagicToken, async (req, res, next) => {
   try {
     const result = await query(
-      `SELECT id, email, first_name, niche, watchlist, categories, subscription_status, created_at
+      `SELECT id, email, first_name, niche, watchlist, categories, subscription_status, created_at, discord_webhook_url
        FROM subscribers WHERE id=$1 AND unsubscribed_at IS NULL`,
       [req.params.id]
     );
@@ -127,6 +127,16 @@ router.patch('/:id', requireMagicToken, async (req, res, next) => {
       if (!Array.isArray(cats)) return res.status(400).json({ error: 'categories must be an array' });
       updates.push(`categories=$${idx++}`); values.push(JSON.stringify(cats));
     }
+    if (req.body.discord_webhook_url !== undefined) {
+      const url = req.body.discord_webhook_url === null || req.body.discord_webhook_url === ''
+        ? null
+        : String(req.body.discord_webhook_url).trim().slice(0, 300);
+      // Only accept genuine Discord webhook URLs (or null to clear) — prevents SSRF
+      if (url !== null && !/^https:\/\/(discord\.com|discordapp\.com)\/api\/webhooks\/\d+\/[\w-]+$/.test(url)) {
+        return res.status(400).json({ error: 'Invalid Discord webhook URL' });
+      }
+      updates.push(`discord_webhook_url=$${idx++}`); values.push(url);
+    }
 
     if (updates.length === 0) return res.status(400).json({ error: 'Nothing to update' });
     updates.push(`updated_at=NOW()`);
@@ -137,6 +147,23 @@ router.patch('/:id', requireMagicToken, async (req, res, next) => {
       values
     );
     res.json({ success: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/subscribers/:id/discord-test?token= — send a test message to the saved webhook
+router.post('/:id/discord-test', requireMagicToken, async (req, res, next) => {
+  try {
+    const r = await query(
+      `SELECT discord_webhook_url FROM subscribers WHERE id=$1 AND unsubscribed_at IS NULL`,
+      [req.params.id]
+    );
+    const url = r.rows[0]?.discord_webhook_url;
+    if (!url) return res.status(400).json({ error: 'No Discord webhook saved' });
+    const { sendDiscordTest } = await import('../services/discord.js');
+    const ok = await sendDiscordTest(url);
+    res.json({ success: ok });
   } catch (err) {
     next(err);
   }

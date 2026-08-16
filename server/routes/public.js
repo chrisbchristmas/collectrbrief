@@ -7,7 +7,7 @@
 import { Router } from 'express';
 import { query } from '../db/index.js';
 import { verifyToken } from '../utils/token.js';
-import { fetchSoldSales, computeTrend } from '../services/cardhedge.js';
+import { fetchSoldSales, computeTrend, computeInsights } from '../services/cardhedge.js';
 
 const router = Router();
 
@@ -45,9 +45,11 @@ router.post('/api/public/price-check', async (req, res, next) => {
 
     const sales = await fetchSoldSales(keywords, { limit: 12, daysBack: 14 });
     const trend = computeTrend(sales);
+    const insights = computeInsights(sales);
     const result = {
       keywords,
       trend,
+      insights,
       recentSales: sales.slice(0, 5).map(s => ({ title: s.title, price: s.price, source: s.source, date: s.date })),
     };
 

@@ -18,6 +18,8 @@ export default function Preferences() {
   const [firstName, setFirstName] = useState('')
   const [niche, setNiche] = useState('')
   const [watchlist, setWatchlist] = useState([])
+  const [discordUrl, setDiscordUrl] = useState('')
+  const [discordStatus, setDiscordStatus] = useState('') // '' | testing | ok | fail
 
   const API = import.meta.env.VITE_API_URL || ''
 
@@ -39,6 +41,7 @@ export default function Preferences() {
         setWatchlist(wl.map(w => typeof w === 'string'
           ? { label: w, keywords: w, purchase_price: '' }
           : { label: w.label || '', keywords: w.keywords || w.label || '', purchase_price: w.purchase_price || '' }))
+        setDiscordUrl(data.discord_webhook_url || '')
         setStatus('ready')
       })
       .catch(err => { setError(err.message); setStatus('error') })
@@ -61,6 +64,7 @@ export default function Preferences() {
         body: JSON.stringify({
           first_name: firstName.trim() || null,
           niche,
+          discord_webhook_url: discordUrl.trim() || null,
           watchlist: watchlist.map(w => ({
             label: w.label.trim(),
             keywords: w.keywords.trim(),
@@ -155,6 +159,46 @@ export default function Preferences() {
           )}
 
           {error && <p className={styles.error}>{error}</p>}
+
+          <div style={{ marginTop: '1.5rem', padding: '1rem 1.25rem', background: '#f4f5ff', borderRadius: 8, border: '1px solid #dfe3ff' }}>
+            <p style={{ margin: 0, fontWeight: 700, fontSize: '0.95rem' }}>⚡ Instant Discord alerts <span style={{ color: '#888', fontWeight: 400 }}>(optional)</span></p>
+            <p style={{ margin: '0.35rem 0 0.6rem', color: '#666', fontSize: '0.85rem' }}>
+              Get price alerts in your own Discord server the moment they trigger — no waiting for email.
+              In Discord: Server Settings → Integrations → Webhooks → New Webhook → Copy URL.
+            </p>
+            <input
+              type="url"
+              placeholder="https://discord.com/api/webhooks/…"
+              value={discordUrl}
+              onChange={e => { setDiscordUrl(e.target.value); setDiscordStatus('') }}
+              style={{ width: '100%', padding: '0.5rem', fontSize: '0.8rem', border: '1px solid #ddd', borderRadius: 6, boxSizing: 'border-box', background: '#fff' }}
+            />
+            {discordUrl.trim() && (
+              <button
+                type="button"
+                onClick={async () => {
+                  setDiscordStatus('testing')
+                  try {
+                    // Save first so the server has the URL, then fire the test
+                    await fetch(`${API}/api/subscribers/${id}?token=${encodeURIComponent(token)}`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ discord_webhook_url: discordUrl.trim() }),
+                    })
+                    const res = await fetch(`${API}/api/subscribers/${id}/discord-test?token=${encodeURIComponent(token)}`, { method: 'POST' })
+                    const data = await res.json()
+                    setDiscordStatus(data.success ? 'ok' : 'fail')
+                  } catch {
+                    setDiscordStatus('fail')
+                  }
+                }}
+                disabled={discordStatus === 'testing'}
+                style={{ marginTop: '0.5rem', padding: '0.4rem 0.9rem', fontSize: '0.8rem', border: '1px solid #ccc', borderRadius: 6, background: '#fff', cursor: 'pointer' }}
+              >
+                {discordStatus === 'testing' ? 'Sending test…' : discordStatus === 'ok' ? '✓ Test sent — check your Discord' : discordStatus === 'fail' ? '✕ Failed — check the URL' : 'Send test message'}
+              </button>
+            )}
+          </div>
 
           <button
             className="btn btn-primary"

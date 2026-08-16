@@ -198,7 +198,7 @@ export default function Onboarding() {
                     <input type="text" placeholder="e.g. PSA 10 Charizard Base Set" value={item.label} onChange={e => updateItem(i, 'label', e.target.value)} />
                   </div>
                   <div className={styles.field}>
-                    <label>Search keywords <span style={{ color: '#999', fontWeight: 400 }}>(what we search on eBay/Heritage)</span></label>
+                    <label>Search keywords <span style={{ color: '#999', fontWeight: 400 }}>(what we search on eBay & auction houses)</span></label>
                     <input type="text" placeholder="e.g. Charizard base set holo PSA 10" value={item.keywords} onChange={e => updateItem(i, 'keywords', e.target.value)} />
                   </div>
                 </div>

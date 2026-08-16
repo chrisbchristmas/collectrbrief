@@ -57,7 +57,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "What if my item isn't tracked yet?",
-    a: "You control your own watchlist — add any specific item by name (player, set, grade, edition). If sold-price data exists on eBay, Heritage, or Fanatics, we'll find it. Obscure or ungraded items may return thinner data, which we'll tell you plainly rather than fabricate a number.",
+    a: "You control your own watchlist — add any specific item by name (player, set, grade, edition). If sold-price data exists on eBay, Goldin, TCGplayer, or the major auction houses, we'll find it. Obscure or ungraded items may return thinner data, which we'll tell you plainly rather than fabricate a number.",
   },
   {
     q: 'Is my data sold to anyone?',
@@ -65,7 +65,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'How is this different from just checking eBay myself?',
-    a: 'You could — and it would take you 20-30 minutes per item, every week, across multiple sites (eBay, Heritage, Fanatics), plus manually tracking whether prices are trending. CollectrBrief automates that entire process for up to 15 items and adds AI-written context on what the movement actually means.',
+    a: 'You could — and it would take you 20-30 minutes per item, every week, across multiple sites (eBay, Goldin, TCGplayer, auction houses), plus manually tracking whether prices are trending. CollectrBrief automates that entire process for up to 15 items and adds AI-written context on what the movement actually means.',
   },
 ]
 
@@ -102,8 +102,8 @@ export default function Landing() {
           collection is worth — every week.
         </h1>
         <p className={styles.heroSub}>
-          CollectrBrief watches your specific items on eBay, Heritage, and Fanatics.
-          Every Sunday you get sold prices, trend direction, and a clear buy / hold / watch take.
+          CollectrBrief watches your specific items across eBay, Goldin, TCGplayer, Lelands and more.
+          Every Sunday you get real sold prices, trend direction, and a clear buy / hold / watch take.
           Not market news. Your items. Your prices.
         </p>
         <div className={styles.heroCta}>
@@ -147,8 +147,8 @@ export default function Landing() {
               <div className={styles.itemStats}>12 sales · avg <strong>$7,240</strong> · range $6,800–$7,900 · trend: <span style={{ color: '#16a34a' }}>up</span></div>
               <div className={styles.itemSales}>
                 <div>Charizard Holo Base Set PSA 10 → <strong>$7,400</strong> <span>eBay</span></div>
-                <div>Base Set Charizard Holo PSA 10 → <strong>$7,250</strong> <span>Heritage</span></div>
-                <div>1999 Charizard #4 PSA 10 → <strong>$6,950</strong> <span>Fanatics</span></div>
+                <div>Base Set Charizard Holo PSA 10 → <strong>$7,250</strong> <span>Goldin</span></div>
+                <div>1999 Charizard #4 PSA 10 → <strong>$6,950</strong> <span>TCGplayer</span></div>
               </div>
             </div>
             <div className={styles.emailItem}>
@@ -157,9 +157,31 @@ export default function Landing() {
             </div>
             <div className={styles.emailTake}>
               <div className={styles.takeLabel}>Market Take</div>
-              <p><strong>PSA 10 Charizard Base Set</strong> — Supply tightened this week with only 12 recorded sales, while avg moved up 3.4% from last week's $7,002. The Heritage result at $7,250 confirms the floor is holding. <strong>BUY</strong> if you're targeting under $7,000 — that window is closing.</p>
+              <p><strong>PSA 10 Charizard Base Set</strong> — Supply tightened this week with only 12 recorded sales, while avg moved up 3.4% from last week's $7,002. The Goldin result at $7,250 confirms the floor is holding. <strong>BUY</strong> if you're targeting under $7,000 — that window is closing.</p>
               <p style={{ marginTop: '0.75rem' }}><strong>1952 Topps Mantle SGC 4</strong> — Volume is thin and pricing is flat. No catalyst on the horizon. <strong>HOLD</strong> what you have, pass on anything priced over comps.</p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* PROOF STRIP — verifiable claims only */}
+      <section className={styles.preview} style={{ paddingTop: 0 }}>
+        <div className="container">
+          <div style={{
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '1rem', maxWidth: 860, margin: '0 auto',
+          }}>
+            {[
+              { stat: '7 marketplaces', body: 'eBay, Goldin, TCGplayer, Lelands, SCP, Hake\u2019s & REA — one clean feed.' },
+              { stat: 'Real sold prices', body: 'Actual completed sales — never asking prices or estimates. Check the sample brief and verify every listing yourself.' },
+              { stat: 'True final prices', body: 'Best-offer sales show the negotiated price, not the sticker. Most trackers can\u2019t see this.' },
+              { stat: 'No lock-in', body: '14-day free trial, cancel in two clicks from any email. Your data is deleted on request.' },
+            ].map((p, i) => (
+              <div key={i} style={{ background: '#fff', border: '1px solid #eee', borderRadius: 10, padding: '1.1rem 1.25rem' }}>
+                <div style={{ fontWeight: 800, fontSize: '1.02rem', marginBottom: '0.3rem' }}>{p.stat}</div>
+                <div style={{ color: '#666', fontSize: '0.85rem', lineHeight: 1.5 }}>{p.body}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -180,7 +202,7 @@ export default function Landing() {
             {[
               { n: '1', title: 'Tell us what you collect', body: 'Sports cards, Pokémon, comics, coins — choose your niche.' },
               { n: '2', title: 'Build your watchlist', body: 'Add up to 15 specific items: player names, sets, grades, or card titles.' },
-              { n: '3', title: 'Receive your brief every Sunday', body: 'Sold prices from eBay, Heritage & Fanatics, trend analysis, and an AI-written market take.' },
+              { n: '3', title: 'Receive your brief every Sunday', body: 'Real sold prices from eBay, Goldin, TCGplayer & more, trend analysis, and an AI-written market take.' },
             ].map(s => (
               <div key={s.n} className={styles.step}>
                 <div className={styles.stepNum}>{s.n}</div>
@@ -246,9 +268,11 @@ export default function Landing() {
             <p className={styles.priceDesc}>Everything included. No tiers, no add-ons.</p>
             <ul className={styles.priceFeatures}>
               <li>✓ Up to 15 watchlist items</li>
-              <li>✓ Weekly sold prices from eBay, Heritage & Fanatics</li>
+              <li>✓ Weekly sold prices from eBay, Goldin, TCGplayer & more</li>
               <li>✓ AI-written buy / hold / watch take</li>
               <li>✓ Price trend analysis (up / stable / down)</li>
+              <li>✓ Grading premium & marketplace spread insights</li>
+              <li>✓ Price alerts by email + instant Discord</li>
               <li>✓ PriceCharting reference prices</li>
               <li>✓ Cancel anytime</li>
             </ul>

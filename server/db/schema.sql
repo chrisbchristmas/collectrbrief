@@ -122,3 +122,8 @@ ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS cancellation_reason TEXT;
 -- Win-back email tracking — 30 days post-cancellation, one-shot
 ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS winback_sent_at TIMESTAMPTZ;
 
+-- === v6 additions (idempotent) ===
+
+-- Discord webhook for instant price alerts (optional, subscriber-provided)
+ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS discord_webhook_url TEXT;
+

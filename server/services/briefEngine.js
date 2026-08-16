@@ -1,7 +1,7 @@
 // services/briefEngine.js — Orchestrates data fetch + LLM + email render
 // Called by the weekly cron job and the /admin/trigger endpoint
 
-import { fetchSoldSales, computeTrend } from './cardhedge.js';
+import { fetchSoldSales, computeTrend, computeInsights } from './cardhedge.js';
 import { searchProduct } from './pricecharting.js';
 import { generateCommentary } from './llm.js';
 import { query } from '../db/index.js';
@@ -185,12 +185,14 @@ async function fetchWatchlistData(watchlist, categories = []) {
       const sales = salesResult.status === 'fulfilled' ? salesResult.value : [];
       const pcData = pcResult.status === 'fulfilled' ? pcResult.value : null;
       const trend = computeTrend(sales);
+      const insights = computeInsights(sales);
 
       return {
         label: item.label || keywords,
         keywords,
         sales,
         trend,
+        insights,
         pcData,
       };
     })
@@ -274,6 +276,7 @@ function renderBriefEmail(subscriber, itemResults, commentary, weekOf, metrics =
             ${wow ? ` · WoW: <strong style="color:${wow.pct >= 0 ? '#16a34a' : '#dc2626'}">${wow.pct >= 0 ? '+' : ''}${wow.pct}%</strong>` : ''}
           </p>
           ${paid && item.trend.avg > 0 ? `<p style="margin:0 0 8px;font-size:13px;color:${item.trend.avg >= paid ? '#16a34a' : '#dc2626'}">You paid $${paid.toLocaleString()} — ${item.trend.avg >= paid ? 'up' : 'down'} ${Math.abs(round1(((item.trend.avg - paid) / paid) * 100))}% (${item.trend.avg >= paid ? '+' : '−'}$${Math.abs(round2(item.trend.avg - paid)).toLocaleString()})</p>` : ''}
+          ${renderInsights(item.insights)}
           ${item.pcData ? `<p style="margin:0 0 8px;color:#888;font-size:13px">PriceCharting: ungraded $${item.pcData.prices.ungraded || '—'} · graded $${item.pcData.prices.graded || '—'}</p>` : ''}
           ${topSales.length ? `
           <table style="width:100%;border-collapse:collapse;font-size:13px;color:#555;margin-top:8px">
@@ -343,6 +346,24 @@ function renderBriefEmail(subscriber, itemResults, commentary, weekOf, metrics =
 </html>`;
 }
 
+/**
+ * Render grading premium + marketplace spread insight badges for a brief item.
+ * Both are computed from data already fetched — zero extra API cost.
+ */
+function renderInsights(insights) {
+  if (!insights) return '';
+  let html = '';
+  const gp = insights.gradingPremium;
+  if (gp) {
+    html += `<p style="margin:0 0 8px;font-size:13px;background:#f0f4ff;border-radius:6px;padding:8px 12px;color:#3730a3">💎 <strong>Grading premium:</strong> ${escapeHtml(gp.highGrade)} avg $${gp.highAvg.toLocaleString()} vs ${escapeHtml(gp.lowGrade)} $${gp.lowAvg.toLocaleString()} — a <strong>+${gp.premiumPct}%</strong> premium (${gp.highCount + gp.lowCount} sales)</p>`;
+  }
+  const ms = insights.marketplaceSpread;
+  if (ms) {
+    html += `<p style="margin:0 0 8px;font-size:13px;background:#fefce8;border-radius:6px;padding:8px 12px;color:#854d0e">⚖️ <strong>Marketplace spread:</strong> avg $${ms.highAvg.toLocaleString()} on ${escapeHtml(ms.highSource)} vs $${ms.lowAvg.toLocaleString()} on ${escapeHtml(ms.lowSource)} — <strong>${ms.spreadPct}%</strong> gap</p>`;
+  }
+  return html;
+}
+
 function escapeHtml(str) {
   return String(str || '')
     .replace(/&/g, '&amp;')
@@ -399,6 +420,11 @@ async function checkAndFireAlerts(subscriber, itemResults) {
       const dashUrl = `${clientOrigin}/dashboard?id=${subscriber.id}&token=${(await import('../utils/token.js')).signToken(subscriber.id)}`;
       await sendAlertNotification(subscriber.email, subscriber.first_name, alert, currentAvg, dashUrl)
         .catch(e => console.warn('[Alerts] Email send failed:', e.message));
+      // Instant Discord delivery if the subscriber connected a webhook (never blocks email)
+      if (subscriber.discord_webhook_url) {
+        const { sendDiscordAlert } = await import('./discord.js');
+        await sendDiscordAlert(subscriber.discord_webhook_url, alert, currentAvg, dashUrl);
+      }
     }
   }
 }

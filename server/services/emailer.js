@@ -187,7 +187,7 @@ export async function sendTrialEndingNudge(toEmail, firstName, trialEndsAt) {
     <div style="background:#fff;border:1px solid #eee;border-radius:8px;padding:20px 24px;margin:24px 0">
       <p style="margin:0 0 10px;color:#1a1a1a;font-weight:700;font-size:15px">What continues:</p>
       <ul style="margin:0;padding-left:20px;color:#555;font-size:14px;line-height:1.9">
-        <li>Weekly sold prices from eBay, Heritage & Fanatics for your items</li>
+        <li>Weekly sold prices from eBay, Goldin, TCGplayer & more for your items</li>
         <li>AI-written buy / hold / watch take</li>
         <li>Price alerts and trend tracking</li>
         <li>Your full brief archive and dashboard</li>

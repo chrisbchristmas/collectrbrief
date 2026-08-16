@@ -48,7 +48,7 @@ export default function Legal() {
             <p>These Terms of Service ("Terms") govern your use of the CollectrBrief website at <strong>www.collectrbrief.com</strong> and any related services (collectively, the "Service"). By subscribing or using the Service you agree to these Terms. If you do not agree, do not use the Service.</p>
 
             <h2 className={styles.h2}>1. The Service</h2>
-            <p>CollectrBrief is a subscription newsletter that delivers weekly market data, sold-price summaries, and editorial commentary for collectibles categories including sports cards, Pokémon, comics, coins, and similar items. Content is sourced from publicly available marketplace data (eBay, Heritage Auctions, Fanatics, PriceCharting, and others) and supplemented with AI-generated analysis.</p>
+            <p>CollectrBrief is a subscription newsletter that delivers weekly market data, sold-price summaries, and editorial commentary for collectibles categories including sports cards, Pokémon, comics, coins, and similar items. Content is sourced from publicly available marketplace data (eBay, Goldin, TCGplayer, Lelands, SCP Auctions, Hake's, REA, PriceCharting, and others) and supplemented with AI-generated analysis.</p>
 
             <h2 className={styles.h2}>2. Subscription and Billing</h2>
             <p>CollectrBrief is offered on a monthly subscription basis at <strong>$9.99 per month</strong>. A 14-day free trial is available to new subscribers. Your credit card will be charged at the end of the trial period unless you cancel beforehand. Billing is handled by Stripe, Inc. and is subject to Stripe's terms and privacy policy. You authorise us to charge your payment method on a recurring monthly basis until you cancel.</p>
@@ -143,7 +143,7 @@ export default function Legal() {
             <p>Some editorial commentary in CollectrBrief briefs is generated or assisted by artificial intelligence. AI-generated analysis may contain errors, omissions, or outdated information. It should not be relied upon as the sole basis for any purchasing or selling decision.</p>
 
             <h2 className={styles.h2}>No Guarantee of Accuracy</h2>
-            <p>While we make reasonable efforts to source accurate sold-price data, we do not guarantee the accuracy, completeness, or timeliness of any information in our briefs. Data sourced from eBay, Heritage Auctions, Fanatics, PriceCharting, and other third parties is subject to their respective accuracy limitations.</p>
+            <p>While we make reasonable efforts to source accurate sold-price data, we do not guarantee the accuracy, completeness, or timeliness of any information in our briefs. Data sourced from eBay, Goldin, TCGplayer, Lelands, SCP Auctions, Hake's, REA, PriceCharting, and other third parties is subject to their respective accuracy limitations.</p>
 
             <h2 className={styles.h2}>Your Own Due Diligence</h2>
             <p>Any buying, selling, or holding decision involving collectibles is your own responsibility. You should conduct your own research, consult qualified professionals where appropriate, and make decisions based on your own financial situation and risk tolerance. CollectrBrief is a research starting point, not a substitute for your own judgement.</p>
