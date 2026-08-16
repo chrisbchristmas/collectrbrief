@@ -157,6 +157,15 @@ router.get('/robots.txt', (req, res) => {
   res.send(`User-agent: *\nAllow: /sample\nAllow: /market/\nAllow: /trending\nDisallow: /b/\nDisallow: /api/\nSitemap: ${apiOrigin}/sitemap.xml\n`);
 });
 
+// GET /google11c1ff63d4017769.html — Search Console ownership verification file
+// for this origin (collectrbrief-api.onrender.com), a separate property from
+// the main www.collectrbrief.com domain since /sample, /market/*, /trending
+// are served here, not by the static client.
+router.get('/google11c1ff63d4017769.html', (req, res) => {
+  res.setHeader('Content-Type', 'text/html');
+  res.send('google-site-verification: google11c1ff63d4017769.html');
+});
+
 // Append a signup CTA banner to shared/sample brief HTML
 function injectCta(html) {
   const origin = process.env.CLIENT_ORIGIN || 'https://www.collectrbrief.com';
