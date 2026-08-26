@@ -344,6 +344,12 @@ export default function Landing() {
             <a href="/legal#privacy" style={{ color: '#888', marginRight: '1.25rem' }}>Privacy Policy</a>
             <a href="/legal#disclaimer" style={{ color: '#888' }}>Financial Disclaimer</a>
           </p>
+          <p style={{ marginTop: '0.4rem', fontSize: '0.8rem' }}>
+            Compare:{' '}
+            <a href="/compare/card-ladder" style={{ color: '#888', marginRight: '1.25rem' }}>vs Card Ladder</a>
+            <a href="/compare/130point" style={{ color: '#888', marginRight: '1.25rem' }}>vs 130point</a>
+            <a href="/compare/pricecharting" style={{ color: '#888' }}>vs PriceCharting</a>
+          </p>
         </div>
       </footer>
     </div>
