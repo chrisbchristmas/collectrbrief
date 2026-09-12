@@ -169,6 +169,86 @@ router.post('/:id/discord-test', requireMagicToken, async (req, res, next) => {
   }
 });
 
+// POST /api/subscribers/:id/watchlist-item — bookmarklet target: append one item
+// Body: { label, keywords }. Dedupes case-insensitively on keywords, caps at 15.
+router.post('/:id/watchlist-item', requireMagicToken, async (req, res, next) => {
+  try {
+    const label = String(req.body?.label || '').trim().slice(0, 120);
+    const keywords = String(req.body?.keywords || label || '').trim().slice(0, 200);
+    if (label.length < 2 || keywords.length < 2) {
+      return res.status(400).json({ error: 'Item name is too short' });
+    }
+
+    const r = await query(
+      `SELECT watchlist FROM subscribers WHERE id=$1 AND unsubscribed_at IS NULL`,
+      [req.params.id]
+    );
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Not found' });
+
+    const current = Array.isArray(r.rows[0].watchlist) ? r.rows[0].watchlist : [];
+    const already = current.some(w => (w.keywords || w.label || '').toLowerCase() === keywords.toLowerCase());
+    if (already) {
+      return res.json({ success: true, added: false, message: 'Already on your watchlist', count: current.length });
+    }
+    if (current.length >= 15) {
+      return res.status(400).json({ error: 'Watchlist is full (15 items) — remove one in Preferences first' });
+    }
+
+    const updated = [...current, { label, keywords }];
+    await query(
+      `UPDATE subscribers SET watchlist=$1, updated_at=NOW() WHERE id=$2`,
+      [JSON.stringify(updated), req.params.id]
+    );
+    res.json({ success: true, added: true, count: updated.length });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/subscribers/:id/export.csv?token= — full sold-sales history across all sent briefs
+router.get('/:id/export.csv', requireMagicToken, async (req, res, next) => {
+  try {
+    const r = await query(
+      `SELECT week_of, raw_data FROM briefs
+       WHERE subscriber_id=$1 AND raw_data IS NOT NULL
+       ORDER BY week_of ASC`,
+      [req.params.id]
+    );
+
+    const rows = [['week_of', 'item_label', 'sale_title', 'price', 'sold_date', 'marketplace', 'grader', 'grade', 'listing_url']];
+    for (const brief of r.rows) {
+      const items = brief.raw_data?.items || [];
+      for (const item of items) {
+        for (const sale of (item.sales || [])) {
+          rows.push([
+            brief.week_of instanceof Date ? brief.week_of.toISOString().slice(0, 10) : String(brief.week_of),
+            item.label || '',
+            sale.title || '',
+            sale.price ?? '',
+            sale.date || '',
+            sale.source || '',
+            sale.grader || '',
+            sale.grade || '',
+            sale.url || '',
+          ]);
+        }
+      }
+    }
+
+    const csv = rows.map(row => row.map(csvEscape).join(',')).join('\r\n');
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="collectrbrief-sales-history.csv"`);
+    res.send(csv);
+  } catch (err) {
+    next(err);
+  }
+});
+
+function csvEscape(val) {
+  const s = String(val ?? '');
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
 // GET /api/subscribers/:id/history?token= — last 12 briefs for chart data
 router.get('/:id/history', requireMagicToken, async (req, res, next) => {
   try {

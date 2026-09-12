@@ -355,6 +355,142 @@ function CategorySelector({ subscriberId, token, currentCategories, onSaved }) {
   )
 }
 
+// ─── Bookmarklet: add items from any listing page ─────────────────────────────
+
+function BookmarkletTool({ subscriberId, token }) {
+  const clientOrigin = window.location.origin
+
+  // Grabs the current page's title (works reasonably well on eBay/TCGplayer/Goldin
+  // listing pages, which put the item name in <title> or the first <h1>), then
+  // redirects to /add-item pre-filled. Kept deliberately simple — no scraping of
+  // prices or images, just the title text, to stay robust across site redesigns.
+  const bookmarkletCode = `javascript:(function(){var h1=document.querySelector('h1');var t=(h1&&h1.innerText)||document.title||'';t=t.replace(/\\s*\\|.*$/,'').replace(/\\s*-\\s*eBay.*$/i,'').trim().slice(0,150);var u='${clientOrigin}/add-item?id=${subscriberId}&token=${token}&title='+encodeURIComponent(t);window.open(u,'_blank','width=480,height=560');})();`
+
+  return (
+    <div>
+      <p style={{ color: '#666', fontSize: 13, marginTop: 0, marginBottom: 14 }}>
+        Drag this button to your bookmarks bar. Then, while viewing any item on eBay, TCGplayer, Goldin, or elsewhere, click it to add that item to your watchlist in one step — no retyping.
+      </p>
+      <a
+        href={bookmarkletCode}
+        onClick={e => e.preventDefault()}
+        draggable="true"
+        style={{
+          display: 'inline-block', padding: '10px 20px', background: '#1a1a1a', color: '#fff',
+          borderRadius: 6, fontSize: 14, fontWeight: 700, textDecoration: 'none', cursor: 'grab',
+          border: '1px dashed #999',
+        }}
+      >
+        ＋ Add to CollectrBrief
+      </a>
+      <p style={{ color: '#aaa', fontSize: 12, marginTop: 10 }}>
+        Can't drag it? Right-click the button → "Bookmark link" (or copy the link and add it as a bookmark manually).
+      </p>
+    </div>
+  )
+}
+
+// ─── Grading calculator ────────────────────────────────────────────────────────
+// Fee data: PSA figures pulled live from psacard.com/services (verified current).
+// BGS/SGC figures are commonly-cited 2026 rates from grading-cost trackers —
+// third-party sources disagree slightly, so these are shown as estimates with a
+// link to verify before submitting, rather than presented as exact quotes.
+const GRADING_FEES = [
+  { company: 'PSA', tier: 'Regular', fee: 79.99, turnaround: '~45 days', maxValue: 1500, verified: true, url: 'https://www.psacard.com/services' },
+  { company: 'PSA', tier: 'Express', fee: 199, turnaround: '~20 days', maxValue: 2500, verified: true, url: 'https://www.psacard.com/services' },
+  { company: 'PSA', tier: 'Super Express', fee: 349, turnaround: '~10 days', maxValue: 5000, verified: true, url: 'https://www.psacard.com/services' },
+  { company: 'SGC', tier: 'Standard', fee: 25, turnaround: '~45-60 days', maxValue: 1500, verified: false, url: 'https://www.gosgc.com/pricing' },
+  { company: 'SGC', tier: 'Expedited', fee: 150, turnaround: '~2-3 days', maxValue: 1500, verified: false, url: 'https://www.gosgc.com/pricing' },
+  { company: 'BGS', tier: 'Standard', fee: 34.95, turnaround: '~20 days', maxValue: null, verified: false, url: 'https://www.beckett.com/grading' },
+  { company: 'BGS', tier: 'Express', fee: 79.95, turnaround: '~5-10 days', maxValue: null, verified: false, url: 'https://www.beckett.com/grading' },
+]
+
+function GradingCalculator({ watchlist }) {
+  const [selectedLabel, setSelectedLabel] = useState('')
+  const [rawValue, setRawValue] = useState('')
+  const [gradedValue, setGradedValue] = useState('')
+  const [feeIdx, setFeeIdx] = useState(0)
+  const [shipping, setShipping] = useState('20')
+
+  const fee = GRADING_FEES[feeIdx]
+  const raw = parseFloat(rawValue) || 0
+  const graded = parseFloat(gradedValue) || 0
+  const totalCost = fee.fee + (parseFloat(shipping) || 0)
+  const netGain = graded - raw - totalCost
+  const worthIt = raw > 0 && graded > 0 && netGain > 0
+
+  return (
+    <div>
+      <p style={{ color: '#666', fontSize: 13, marginTop: 0, marginBottom: 14 }}>
+        Estimate whether grading a raw item is worth it. Pull the graded-vs-raw comps from your brief's 💎 grading premium insight, or check any item above.
+      </p>
+
+      {watchlist.length > 0 && (
+        <div style={{ marginBottom: 10 }}>
+          <label style={{ display: 'block', fontSize: 11, color: '#888', marginBottom: 3 }}>Item (optional)</label>
+          <select value={selectedLabel} onChange={e => setSelectedLabel(e.target.value)}
+            style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #ddd', fontSize: 13 }}>
+            <option value="">— pick from watchlist —</option>
+            {watchlist.map(w => <option key={w.label} value={w.label}>{w.label}</option>)}
+          </select>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+        <div style={{ flex: '1 1 140px' }}>
+          <label style={{ display: 'block', fontSize: 11, color: '#888', marginBottom: 3 }}>Raw / current value ($)</label>
+          <input type="number" min="0" step="0.01" value={rawValue} onChange={e => setRawValue(e.target.value)}
+            style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #ddd', fontSize: 13, boxSizing: 'border-box' }} />
+        </div>
+        <div style={{ flex: '1 1 140px' }}>
+          <label style={{ display: 'block', fontSize: 11, color: '#888', marginBottom: 3 }}>Expected graded value ($)</label>
+          <input type="number" min="0" step="0.01" value={gradedValue} onChange={e => setGradedValue(e.target.value)}
+            style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #ddd', fontSize: 13, boxSizing: 'border-box' }} />
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+        <div style={{ flex: '1 1 220px' }}>
+          <label style={{ display: 'block', fontSize: 11, color: '#888', marginBottom: 3 }}>Grading service &amp; tier</label>
+          <select value={feeIdx} onChange={e => setFeeIdx(Number(e.target.value))}
+            style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #ddd', fontSize: 13 }}>
+            {GRADING_FEES.map((f, i) => (
+              <option key={i} value={i}>{f.company} {f.tier} — ${f.fee} ({f.turnaround}){f.verified ? '' : ' *est.'}</option>
+            ))}
+          </select>
+        </div>
+        <div style={{ flex: '0 0 120px' }}>
+          <label style={{ display: 'block', fontSize: 11, color: '#888', marginBottom: 3 }}>Shipping ($)</label>
+          <input type="number" min="0" step="1" value={shipping} onChange={e => setShipping(e.target.value)}
+            style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #ddd', fontSize: 13, boxSizing: 'border-box' }} />
+        </div>
+      </div>
+
+      {!fee.verified && (
+        <p style={{ color: '#a16207', fontSize: 11, margin: '0 0 12px' }}>
+          * {fee.company} rate is a commonly-cited estimate, not pulled live — <a href={fee.url} target="_blank" rel="noopener noreferrer" style={{ color: '#a16207' }}>verify current pricing</a> before submitting.
+        </p>
+      )}
+
+      {raw > 0 && graded > 0 && (
+        <div style={{
+          background: worthIt ? '#dcfce7' : '#fee2e2', borderRadius: 8, padding: '14px 18px',
+        }}>
+          <div style={{ fontSize: 13, color: '#444', marginBottom: 6 }}>
+            Grading cost: <strong>${totalCost.toFixed(2)}</strong> (${fee.fee} fee + ${(parseFloat(shipping) || 0).toFixed(0)} shipping)
+          </div>
+          <div style={{ fontSize: 17, fontWeight: 800, color: worthIt ? '#166534' : '#991b1b' }}>
+            {worthIt ? '✓ Worth grading' : '✕ Not worth grading'} — net {netGain >= 0 ? '+' : ''}${netGain.toFixed(2)}
+          </div>
+          <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
+            ${graded.toFixed(2)} graded value − ${raw.toFixed(2)} raw value − ${totalCost.toFixed(2)} grading cost
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 
 export default function Dashboard() {
@@ -439,6 +575,27 @@ export default function Dashboard() {
 
         <Section title="Brief Archive">
           <BriefArchive history={history} />
+        </Section>
+
+        <Section title="Add Items From Any Listing">
+          <BookmarkletTool subscriberId={id} token={token} />
+        </Section>
+
+        <Section title="Grading Calculator">
+          <GradingCalculator watchlist={watchlist} />
+        </Section>
+
+        <Section title="Export Your Data">
+          <p style={{ color: '#666', fontSize: 13, marginTop: 0, marginBottom: 14 }}>
+            Download every sold-price record CollectrBrief has ever pulled for your watchlist, as a CSV.
+          </p>
+          <a
+            href={`${API}/api/subscribers/${id}/export.csv?token=${encodeURIComponent(token)}`}
+            className="btn btn-primary"
+            style={{ display: 'inline-block', textDecoration: 'none', padding: '8px 20px', fontSize: 13 }}
+          >
+            ⬇ Download CSV
+          </a>
         </Section>
 
         <Section title="My Categories">
