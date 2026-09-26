@@ -491,6 +491,77 @@ function GradingCalculator({ watchlist }) {
   )
 }
 
+// ─── Lot value calculator ──────────────────────────────────────────────────────
+// Sums the current market value of any combination of watchlist items — e.g.
+// "what's this bundle of 4 cards worth if I sell/trade them together?"
+// Uses each item's most recent brief avg (already in history) — zero new calls.
+
+function LotValueCalculator({ watchlist, history }) {
+  const [selected, setSelected] = useState([])
+
+  // Latest known avg per label, from the most recent brief that has data for it
+  const latestAvgByLabel = {}
+  for (const brief of history) {
+    for (const item of brief.items) {
+      if (item.avg > 0 && !(item.label in latestAvgByLabel)) {
+        latestAvgByLabel[item.label] = item.avg
+      }
+    }
+  }
+
+  function toggle(label) {
+    setSelected(s => s.includes(label) ? s.filter(l => l !== label) : [...s, label])
+  }
+
+  const total = selected.reduce((sum, label) => sum + (latestAvgByLabel[label] || 0), 0)
+  const missingData = selected.filter(l => !(l in latestAvgByLabel))
+
+  if (!watchlist.length) return <p style={{ color: '#999', fontSize: 14 }}>Add watchlist items in Preferences to use the lot calculator.</p>
+
+  return (
+    <div>
+      <p style={{ color: '#666', fontSize: 13, marginTop: 0, marginBottom: 14 }}>
+        Select items to see their combined current market value — useful for pricing a bundle, trade, or partial sale.
+      </p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
+        {watchlist.map(w => {
+          const label = w.label || w.keywords || w
+          const avg = latestAvgByLabel[label]
+          const checked = selected.includes(label)
+          return (
+            <label key={label} style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '8px 12px', background: checked ? '#f0f4ff' : '#f9f6f1', borderRadius: 6, cursor: 'pointer',
+              border: checked ? '1px solid #c7d2fe' : '1px solid transparent',
+            }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
+                <input type="checkbox" checked={checked} onChange={() => toggle(label)} />
+                {label}
+              </span>
+              <span style={{ fontSize: 13, color: avg ? '#333' : '#bbb', fontWeight: 600 }}>
+                {avg ? `$${avg.toLocaleString()}` : 'no data yet'}
+              </span>
+            </label>
+          )
+        })}
+      </div>
+      {selected.length > 0 && (
+        <div style={{ background: '#1a1a1a', borderRadius: 8, padding: '14px 20px' }}>
+          <div style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: 1, color: '#aaa', marginBottom: 4 }}>
+            Lot value ({selected.length} item{selected.length === 1 ? '' : 's'})
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: '#fff' }}>${total.toLocaleString()}</div>
+          {missingData.length > 0 && (
+            <div style={{ fontSize: 12, color: '#f59e0b', marginTop: 6 }}>
+              {missingData.length} item{missingData.length === 1 ? '' : 's'} not yet priced — total will update once next brief runs.
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 
 export default function Dashboard() {
@@ -583,6 +654,10 @@ export default function Dashboard() {
 
         <Section title="Grading Calculator">
           <GradingCalculator watchlist={watchlist} />
+        </Section>
+
+        <Section title="Lot Value Calculator">
+          <LotValueCalculator watchlist={watchlist} history={history} />
         </Section>
 
         <Section title="Export Your Data">

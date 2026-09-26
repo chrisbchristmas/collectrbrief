@@ -267,10 +267,15 @@ function renderBriefEmail(subscriber, itemResults, commentary, weekOf, metrics =
     const topSales = item.sales.slice(0, 5);
     const wow = metrics?.perItem?.[item.label];
     const paid = paidByLabel[item.label];
+    // Deal Alert: item's avg dropped 8%+ vs last week — flag as a possible buying
+    // opportunity. Reuses the WoW metric already computed in computeMetrics();
+    // zero extra API calls.
+    const dealAlert = wow && wow.pct <= -8;
     return `
       <tr>
         <td style="padding:20px 0;border-bottom:1px solid #eee">
           <h3 style="margin:0 0 8px;font-size:18px;color:#1a1a1a">${icon} ${escapeHtml(item.label)}</h3>
+          ${dealAlert ? `<p style="margin:0 0 8px;font-size:13px;background:#ecfdf5;border-radius:6px;padding:8px 12px;color:#065f46">🎯 <strong>Deal alert:</strong> down ${Math.abs(wow.pct)}% vs last week — may be a good time to buy</p>` : ''}
           <p style="margin:0 0 8px;color:#666;font-size:14px">
             ${item.trend.count} sales · avg <strong>$${item.trend.avg}</strong> · range $${item.trend.min}–$${item.trend.max} · trend: <strong style="color:${trendColor(item.trend.trend)}">${item.trend.trend}</strong>
             ${wow ? ` · WoW: <strong style="color:${wow.pct >= 0 ? '#16a34a' : '#dc2626'}">${wow.pct >= 0 ? '+' : ''}${wow.pct}%</strong>` : ''}
@@ -349,6 +354,10 @@ function renderBriefEmail(subscriber, itemResults, commentary, weekOf, metrics =
 /**
  * Render grading premium + marketplace spread insight badges for a brief item.
  * Both are computed from data already fetched — zero extra API cost.
+ * Also surfaces an automated grading recommendation when the premium is large
+ * enough to plausibly clear typical grading fees (~$25-80) — a proactive nudge,
+ * not a precise ROI calc (the dashboard's Grading Calculator does that with
+ * the item's actual raw value).
  */
 function renderInsights(insights) {
   if (!insights) return '';
@@ -356,6 +365,9 @@ function renderInsights(insights) {
   const gp = insights.gradingPremium;
   if (gp) {
     html += `<p style="margin:0 0 8px;font-size:13px;background:#f0f4ff;border-radius:6px;padding:8px 12px;color:#3730a3">💎 <strong>Grading premium:</strong> ${escapeHtml(gp.highGrade)} avg $${gp.highAvg.toLocaleString()} vs ${escapeHtml(gp.lowGrade)} $${gp.lowAvg.toLocaleString()} — a <strong>+${gp.premiumPct}%</strong> premium (${gp.highCount + gp.lowCount} sales)</p>`;
+    if (gp.premiumPct >= 100 && gp.lowAvg > 0) {
+      html += `<p style="margin:0 0 8px;font-size:13px;background:#f0fdf4;border-radius:6px;padding:8px 12px;color:#166534">🏅 <strong>Grading recommendation:</strong> the premium here likely clears typical grading fees ($25-$80) — worth submitting a raw copy. Check the exact math in your dashboard's Grading Calculator.</p>`;
+    }
   }
   const ms = insights.marketplaceSpread;
   if (ms) {

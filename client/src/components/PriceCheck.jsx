@@ -105,6 +105,11 @@ export default function PriceCheck({ onSubscribeClick }) {
               💎 <strong>{result.insights.gradingPremium.highGrade}</strong> sells for <strong>+{result.insights.gradingPremium.premiumPct}%</strong> over {result.insights.gradingPremium.lowGrade} in this data
             </div>
           )}
+          {result.insights?.gradingPremium?.premiumPct >= 100 && (
+            <div style={{ marginTop: '0.4rem', padding: '0.55rem 0.8rem', background: '#f0fdf4', borderRadius: 8, fontSize: '0.82rem', color: '#166534' }}>
+              🏅 Premium likely clears typical grading fees — may be worth submitting a raw copy
+            </div>
+          )}
           {result.insights?.marketplaceSpread && (
             <div style={{ marginTop: '0.4rem', padding: '0.55rem 0.8rem', background: '#fefce8', borderRadius: 8, fontSize: '0.82rem', color: '#854d0e' }}>
               ⚖️ Avg <strong>${result.insights.marketplaceSpread.highAvg.toLocaleString()}</strong> on {result.insights.marketplaceSpread.highSource} vs <strong>${result.insights.marketplaceSpread.lowAvg.toLocaleString()}</strong> on {result.insights.marketplaceSpread.lowSource} — a {result.insights.marketplaceSpread.spreadPct}% gap

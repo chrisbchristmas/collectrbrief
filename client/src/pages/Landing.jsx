@@ -272,6 +272,8 @@ export default function Landing() {
               <li>✓ AI-written buy / hold / watch take</li>
               <li>✓ Price trend analysis (up / stable / down)</li>
               <li>✓ Grading premium & marketplace spread insights</li>
+              <li>✓ Automated deal alerts & grading recommendations</li>
+              <li>✓ Lot value calculator</li>
               <li>✓ Price alerts by email + instant Discord</li>
               <li>✓ PriceCharting reference prices</li>
               <li>✓ Cancel anytime</li>
