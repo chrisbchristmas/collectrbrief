@@ -29,7 +29,7 @@ export const MARKET_NICHES = [
   ]},
   { slug: 'sports-cards', name: 'Sports Cards', items: [
     { label: 'LeBron James PSA 10', keywords: 'lebron james PSA 10' },
-    { label: 'Patrick Mahomes Prizm PSA 10', keywords: 'patrick mahomes prizm PSA 10' },
+    { label: 'Caitlin Clark PSA 10', keywords: 'caitlin clark PSA 10' },
     { label: 'Victor Wembanyama PSA 10', keywords: 'victor wembanyama PSA 10' },
   ]},
 ];
