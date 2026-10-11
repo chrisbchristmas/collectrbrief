@@ -3,7 +3,7 @@
 // LLM call per page; data comes from the same fetch pipeline (cached snapshots help).
 
 import { fetchSoldSales, computeTrend, applyWeekOverWeek } from './cardhedge.js';
-import { generateCommentary, formatCommentary } from './llm.js';
+import { generateCommentary, formatCommentary, LLM_ENABLED } from './llm.js';
 import { query } from '../db/index.js';
 
 export const SAMPLE_SUBSCRIBER = {
@@ -11,23 +11,26 @@ export const SAMPLE_SUBSCRIBER = {
   first_name: null,
   niche: 'Sports Cards & Pokémon',
   watchlist: [
-    { label: 'PSA 10 1999 Charizard Base Set Holo', keywords: 'charizard base set holo PSA 10' },
-    { label: '2018 Luka Doncic Prizm PSA 10', keywords: 'luka doncic prizm 2018 PSA 10' },
-    { label: '1986 Fleer Michael Jordan PSA 8', keywords: '1986 fleer michael jordan PSA 8' },
-    { label: '2000 Tom Brady Bowman Chrome PSA 9', keywords: 'tom brady bowman chrome 2000 PSA 9' },
+    // Keywords are deliberately broad — The Card API free tier only exposes a 3-day
+    // window, so each must reliably clear 10+ graded sales every day or the page
+    // degrades to "0 sales · $0". Verified liquid as of Oct 2026.
+    { label: 'Charizard PSA 10', keywords: 'charizard PSA 10' },
+    { label: 'Shohei Ohtani PSA 10', keywords: 'shohei ohtani PSA 10' },
+    { label: 'Michael Jordan Fleer PSA 8', keywords: 'michael jordan fleer PSA 8' },
+    { label: 'Victor Wembanyama PSA 10', keywords: 'victor wembanyama PSA 10' },
   ],
 };
 
 export const MARKET_NICHES = [
   { slug: 'pokemon', name: 'Pokémon Cards', items: [
-    { label: 'PSA 10 1999 Charizard Base Set Holo', keywords: 'charizard base set holo PSA 10' },
-    { label: 'PSA 10 Umbreon VMAX Alt Art', keywords: 'umbreon vmax alt art PSA 10' },
-    { label: 'PSA 10 1999 Blastoise Base Set Holo', keywords: 'blastoise base set holo PSA 10' },
+    { label: 'Charizard PSA 10', keywords: 'charizard PSA 10' },
+    { label: 'Pikachu PSA 10', keywords: 'pikachu PSA 10' },
+    { label: 'Umbreon PSA 10', keywords: 'umbreon PSA 10' },
   ]},
   { slug: 'sports-cards', name: 'Sports Cards', items: [
-    { label: '2018 Luka Doncic Prizm PSA 10', keywords: 'luka doncic prizm 2018 PSA 10' },
-    { label: '2017 Patrick Mahomes Prizm PSA 10', keywords: 'patrick mahomes prizm 2017 PSA 10' },
-    { label: '1986 Fleer Michael Jordan PSA 8', keywords: '1986 fleer michael jordan PSA 8' },
+    { label: 'LeBron James PSA 10', keywords: 'lebron james PSA 10' },
+    { label: 'Patrick Mahomes Prizm PSA 10', keywords: 'patrick mahomes prizm PSA 10' },
+    { label: 'Victor Wembanyama PSA 10', keywords: 'victor wembanyama PSA 10' },
   ]},
 ];
 
@@ -38,7 +41,8 @@ export async function generateSampleBrief(weekOf) {
     console.warn(`[PublicContent] Sample brief skipped — only ${itemResults.length} item(s) with real sales; keeping last published version`);
     return null;
   }
-  const commentary = await generateCommentary(SAMPLE_SUBSCRIBER, itemResults).catch(() => null);
+  // Public pages never show placeholder text — omit the section if no LLM is configured.
+  const commentary = LLM_ENABLED ? await generateCommentary(SAMPLE_SUBSCRIBER, itemResults).catch(() => null) : null;
   const html = renderPublicBrief(itemResults, commentary, weekOf);
 
   await query(
@@ -55,9 +59,13 @@ export async function generateMarketPages(weekOf) {
   for (const niche of MARKET_NICHES) {
     try {
       const itemResults = await fetchItems(niche.items);
-      const commentary = await generateCommentary(
+      if (itemResults.length < 2) {
+        console.warn(`[PublicContent] Market page ${niche.slug} skipped — only ${itemResults.length} item(s) with real sales`);
+        continue;
+      }
+      const commentary = LLM_ENABLED ? await generateCommentary(
         { niche: niche.name, watchlist: niche.items }, itemResults
-      ).catch(() => null);
+      ).catch(() => null) : null;
       const html = renderMarketPage(niche, itemResults, commentary, weekOf);
       await query(
         `INSERT INTO market_pages (niche_slug, week_of, html) VALUES ($1, $2, $3)

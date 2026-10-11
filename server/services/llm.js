@@ -4,6 +4,7 @@
 const API_KEY = process.env.OPENAI_API_KEY;
 const BASE_URL = process.env.LLM_BASE_URL || 'https://api.openai.com/v1';
 const MODEL = process.env.LLM_MODEL || 'gpt-4o-mini';
+export const LLM_ENABLED = Boolean(API_KEY);
 
 /**
  * Generate a Buy / Hold / Watch commentary for a subscriber's watchlist.
@@ -149,8 +150,8 @@ function getMockCommentary(itemResults) {
   return itemResults.map(item => {
     const signals = ['BUY', 'HOLD', 'WATCH'];
     const signal = signals[Math.floor(Math.random() * signals.length)];
-    return `<p><strong>${item.label}</strong> — ${item.trend.count} sales this week averaging $${item.trend.avg}. ` +
+    return `**${item.label}** — ${item.trend.count} sales this week averaging $${item.trend.avg}. ` +
       `Prices are ${item.trend.trend} with a range of $${item.trend.min}–$${item.trend.max}. ` +
-      `This is mock commentary generated without an LLM API key. Signal: <strong>${signal}</strong></p>`;
-  }).join('\n');
+      `This is mock commentary generated without an LLM API key. Signal: ${signal}`;
+  }).join('\n\n');
 }
