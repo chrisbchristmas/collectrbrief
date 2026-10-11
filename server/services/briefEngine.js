@@ -1,9 +1,9 @@
 // services/briefEngine.js — Orchestrates data fetch + LLM + email render
 // Called by the weekly cron job and the /admin/trigger endpoint
 
-import { fetchSoldSales, computeTrend, computeInsights } from './cardhedge.js';
+import { fetchSoldSales, computeTrend, computeInsights, applyWeekOverWeek } from './cardhedge.js';
 import { searchProduct } from './pricecharting.js';
-import { generateCommentary } from './llm.js';
+import { generateCommentary, formatCommentary } from './llm.js';
 import { query } from '../db/index.js';
 import { signToken } from '../utils/token.js';
 
@@ -184,7 +184,9 @@ async function fetchWatchlistData(watchlist, categories = []) {
 
       const sales = salesResult.status === 'fulfilled' ? salesResult.value : [];
       const pcData = pcResult.status === 'fulfilled' ? pcResult.value : null;
-      const trend = computeTrend(sales);
+      // True week-over-week from stored snapshot history when available;
+      // falls back to in-window older/newer-half comparison otherwise.
+      const trend = await applyWeekOverWeek(keywords, computeTrend(sales));
       const insights = computeInsights(sales);
 
       return {
@@ -298,7 +300,7 @@ function renderBriefEmail(subscriber, itemResults, commentary, weekOf, metrics =
 
   // Commentary is LLM output — convert newlines to <p> tags
   const commentaryHtml = commentary
-    ? commentary.split(/\n\n+/).map(p => `<p style="color:#e8e4dc;line-height:1.7;font-size:15px">${escapeHtml(p)}</p>`).join('')
+    ? formatCommentary(commentary)
     : '';
 
   return `<!DOCTYPE html>

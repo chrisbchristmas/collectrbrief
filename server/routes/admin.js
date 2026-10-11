@@ -120,6 +120,17 @@ router.post('/generate-public-content', async (req, res, next) => {
   }
 });
 
+// POST /api/admin/snapshot-prices — run the daily price-history warmer now
+router.post('/snapshot-prices', async (req, res, next) => {
+  try {
+    const { runSnapshotJob } = await import('../jobs/snapshotPrices.js');
+    const stats = await runSnapshotJob();
+    res.json({ success: true, ...stats });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // GET /api/admin/magic-link/:subscriberId — generate the preferences magic link for a subscriber
 router.get('/magic-link/:subscriberId', async (req, res, next) => {
   try {

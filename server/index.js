@@ -11,6 +11,7 @@ import publicRouter from './routes/public.js';
 import alertsRouter from './routes/alerts.js';
 import { scheduleBriefJob } from './jobs/sendBriefs.js';
 import { scheduleTrialNudgeJob } from './jobs/trialNudges.js';
+import { scheduleSnapshotJob } from './jobs/snapshotPrices.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -54,6 +55,7 @@ async function start() {
   await runMigrations();
   scheduleBriefJob();
   scheduleTrialNudgeJob();
+  scheduleSnapshotJob();
   app.listen(PORT, () => console.log(`[Server] CollectrBrief API listening on :${PORT}`));
 }
 
