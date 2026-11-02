@@ -127,6 +127,22 @@ export default function Landing() {
             >
               🔥 See this week's biggest movers →
             </a>
+            {' · '}
+            <a
+              href={`${import.meta.env.VITE_API_URL || 'https://collectrbrief-api.onrender.com'}/market/sports-cards`}
+              target="_blank" rel="noopener noreferrer"
+              style={{ color: '#666', fontSize: '0.95rem', textDecoration: 'underline' }}
+            >
+              Sports card prices →
+            </a>
+            {' · '}
+            <a
+              href={`${import.meta.env.VITE_API_URL || 'https://collectrbrief-api.onrender.com'}/market/pokemon`}
+              target="_blank" rel="noopener noreferrer"
+              style={{ color: '#666', fontSize: '0.95rem', textDecoration: 'underline' }}
+            >
+              Pokémon card prices →
+            </a>
           </p>
         </div>
 
