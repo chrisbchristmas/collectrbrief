@@ -42,8 +42,8 @@ router.post('/', async (req, res, next) => {
 
     // Upsert subscriber
     const result = await query(
-      `INSERT INTO subscribers (email, first_name, niche, watchlist, referred_by)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO subscribers (email, first_name, niche, watchlist, referred_by, subscription_status)
+       VALUES ($1, $2, $3, $4, $5, 'pending')
        ON CONFLICT (email) DO UPDATE
          SET first_name = EXCLUDED.first_name,
              niche = EXCLUDED.niche,
@@ -58,6 +58,7 @@ router.post('/', async (req, res, next) => {
 
     // If no Stripe, just welcome them and return
     if (!stripe) {
+      await query(`UPDATE subscribers SET subscription_status='trialing' WHERE id=$1 AND subscription_status='pending'`, [subscriber.id]);
       await sendWelcome(email, first_name);
       return res.json({ subscriberId: subscriber.id, checkoutUrl: null, status: 'active' });
     }
