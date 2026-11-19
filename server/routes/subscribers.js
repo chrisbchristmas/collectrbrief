@@ -15,12 +15,24 @@ function requireMagicToken(req, res, next) {
 }
 
 const router = Router();
+
+// Per-IP signup throttle (in-memory): max 15 POSTs per hour. Stops Stripe-session / email spam.
+const signupHits = new Map();
+function signupLimited(ip) {
+  const now = Date.now();
+  const hits = (signupHits.get(ip) || []).filter(t => now - t < 3600_000);
+  hits.push(now);
+  signupHits.set(ip, hits);
+  if (signupHits.size > 5000) for (const [k, v] of signupHits) if (!v.some(t => now - t < 3600_000)) signupHits.delete(k);
+  return hits.length > 15;
+}
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 
 // POST /api/subscribers — create subscriber + initiate Stripe checkout
 // Body: { email, first_name, niche, watchlist, plan?: 'monthly'|'annual', ref?: <referrer subscriber id> }
 router.post('/', async (req, res, next) => {
   try {
+    if (signupLimited(req.ip)) return res.status(429).json({ error: 'Too many signup attempts. Please try again later.' });
     const { email, first_name, niche, watchlist, plan, ref } = req.body;
 
     if (!email || !niche || !Array.isArray(watchlist) || watchlist.length === 0) {
@@ -40,6 +52,16 @@ router.post('/', async (req, res, next) => {
       if (r.rows.length > 0) referrerId = r.rows[0].id;
     }
 
+    // Never let an unauthenticated request touch (or learn the id of) a live paying subscriber.
+    const existing = await query(
+      `SELECT 1 FROM subscribers WHERE email=$1 AND stripe_subscription_id IS NOT NULL
+         AND subscription_status IN ('active','trialing','past_due') AND unsubscribed_at IS NULL`,
+      [email.toLowerCase().trim()]
+    );
+    if (existing.rows.length > 0) {
+      return res.status(409).json({ error: 'This email is already subscribed. Use the manage link in your latest brief to change your watchlist.' });
+    }
+
     // Upsert subscriber
     const result = await query(
       `INSERT INTO subscribers (email, first_name, niche, watchlist, referred_by, subscription_status)
@@ -49,6 +71,8 @@ router.post('/', async (req, res, next) => {
              niche = EXCLUDED.niche,
              watchlist = EXCLUDED.watchlist,
              referred_by = COALESCE(subscribers.referred_by, EXCLUDED.referred_by),
+             subscription_status = 'pending',
+             unsubscribed_at = NULL,
              updated_at = NOW()
        RETURNING id, email, subscription_status`,
       [email.toLowerCase().trim(), first_name || null, niche, JSON.stringify(watchlist), referrerId]

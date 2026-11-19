@@ -19,6 +19,7 @@ const PORT = process.env.PORT || 3001;
 // Stripe webhook needs raw body — mount before json parser
 app.use('/api/webhooks/stripe', express.raw({ type: 'application/json' }));
 
+app.set('trust proxy', 1); // Render sits behind one proxy — needed for correct req.ip in rate limiters
 app.use(helmet());
 app.use(cors({
   origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
