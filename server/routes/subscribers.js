@@ -32,7 +32,7 @@ const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SEC
 // Body: { email, first_name, niche, watchlist, plan?: 'monthly'|'annual', ref?: <referrer subscriber id> }
 router.post('/', async (req, res, next) => {
   try {
-    if (signupLimited(req.ip)) return res.status(429).json({ error: 'Too many signup attempts. Please try again later.' });
+    if (signupLimited(req.headers['cf-connecting-ip'] || req.ip)) return res.status(429).json({ error: 'Too many signup attempts. Please try again later.' });
     const { email, first_name, niche, watchlist, plan, ref } = req.body;
 
     if (!email || !niche || !Array.isArray(watchlist) || watchlist.length === 0) {
