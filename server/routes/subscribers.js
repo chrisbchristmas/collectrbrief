@@ -139,8 +139,8 @@ router.patch('/:id', requireMagicToken, async (req, res, next) => {
     const values = [];
     let idx = 1;
 
-    if (first_name !== undefined) { updates.push(`first_name=$${idx++}`); values.push(first_name); }
-    if (niche !== undefined) { updates.push(`niche=$${idx++}`); values.push(niche); }
+    if (first_name !== undefined) { updates.push(`first_name=$${idx++}`); values.push(String(first_name).slice(0, 100)); }
+    if (niche !== undefined) { updates.push(`niche=$${idx++}`); values.push(String(niche).slice(0, 200)); }
     if (watchlist !== undefined) {
       if (!Array.isArray(watchlist) || watchlist.length > 15) {
         return res.status(400).json({ error: 'Invalid watchlist' });
@@ -150,7 +150,7 @@ router.patch('/:id', requireMagicToken, async (req, res, next) => {
     if (req.body.categories !== undefined) {
       const cats = req.body.categories;
       if (!Array.isArray(cats)) return res.status(400).json({ error: 'categories must be an array' });
-      updates.push(`categories=$${idx++}`); values.push(JSON.stringify(cats));
+      updates.push(`categories=$${idx++}`); values.push(JSON.stringify(cats.slice(0, 30).map((c) => String(c).slice(0, 60))));
     }
     if (req.body.discord_webhook_url !== undefined) {
       const url = req.body.discord_webhook_url === null || req.body.discord_webhook_url === ''

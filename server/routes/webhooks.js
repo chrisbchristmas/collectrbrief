@@ -5,6 +5,12 @@ import { query } from '../db/index.js';
 import { sendWelcome } from '../services/emailer.js';
 
 const router = Router();
+
+// Event de-duplication: Stripe retries and replays must not resend welcome emails or double-credit referrals.
+let dedupeReady;
+const ensureDedupe = () => (dedupeReady ||= query(
+  `CREATE TABLE IF NOT EXISTS stripe_events (id TEXT PRIMARY KEY, received_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`
+).catch((e) => { dedupeReady = null; throw e; }));
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 
 // POST /api/webhooks/stripe
@@ -27,6 +33,15 @@ router.post('/stripe', async (req, res) => {
 
   console.log(`[Webhook] ${event.type}`);
 
+  try {
+    await ensureDedupe();
+    const claim = await query('INSERT INTO stripe_events (id) VALUES ($1) ON CONFLICT DO NOTHING RETURNING id', [event.id]);
+    if (claim.rows.length === 0) return res.status(200).json({ received: true, duplicate: true });
+  } catch (e) {
+    console.error('[Webhook] dedupe unavailable, processing anyway:', e.message);
+  }
+
+  try {
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object;
@@ -110,6 +125,12 @@ router.post('/stripe', async (req, res) => {
 
     default:
       // Unhandled event — ignore silently
+  }
+  } catch (err) {
+    console.error('[Webhook] handler error:', err.message);
+    // Release the claim so Stripe's retry is processed, and tell Stripe to retry.
+    await query('DELETE FROM stripe_events WHERE id=$1', [event.id]).catch(() => {});
+    return res.sendStatus(500);
   }
 
   res.sendStatus(200);
