@@ -270,7 +270,8 @@ router.get('/:id/export.csv', requireMagicToken, async (req, res, next) => {
 });
 
 function csvEscape(val) {
-  const s = String(val ?? '');
+  let s = String(val ?? '');
+  if (typeof val === 'string' && /^[=+\-@\t\r]/.test(s)) s = "'" + s; // CSV formula injection
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
@@ -301,23 +302,24 @@ router.get('/:id/history', requireMagicToken, async (req, res, next) => {
 
 // DELETE /api/subscribers/:id/unsubscribe
 // Body: { reason?: string } — optional cancellation feedback
-router.delete('/:id/unsubscribe', async (req, res, next) => {
+router.delete('/:id/unsubscribe', requireMagicToken, async (req, res, next) => {
   try {
     const reason = req.body?.reason ? String(req.body.reason).slice(0, 500) : null;
-    const result = await query(
-      `UPDATE subscribers SET unsubscribed_at=NOW(), cancellation_reason=$2 WHERE id=$1 RETURNING email, stripe_subscription_id`,
-      [req.params.id, reason]
-    );
-    if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
+    const cur = await query(`SELECT stripe_subscription_id FROM subscribers WHERE id=$1`, [req.params.id]);
+    if (cur.rows.length === 0) return res.status(404).json({ error: 'Not found' });
 
-    // Cancel Stripe subscription if one exists
-    const { stripe_subscription_id } = result.rows[0];
-    if (stripe && stripe_subscription_id) {
-      await stripe.subscriptions.cancel(stripe_subscription_id).catch(e =>
-        console.warn('[Stripe] Cancel subscription error:', e.message)
-      );
+    // Cancel billing first: if Stripe fails, stay subscribed and tell the user rather than keep charging an "unsubscribed" account.
+    const subId = cur.rows[0].stripe_subscription_id;
+    if (stripe && subId) {
+      try { await stripe.subscriptions.cancel(subId); }
+      catch (e) {
+        if (e.code !== 'resource_missing') { // already-cancelled is fine
+          console.error('[Stripe] Cancel subscription error:', e.message);
+          return res.status(502).json({ error: 'Could not cancel your billing right now. Please try again in a few minutes.' });
+        }
+      }
     }
-
+    await query(`UPDATE subscribers SET unsubscribed_at=NOW(), cancellation_reason=$2 WHERE id=$1`, [req.params.id, reason]);
     res.json({ success: true });
   } catch (err) {
     next(err);

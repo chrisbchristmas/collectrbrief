@@ -49,7 +49,8 @@ app.use('/', publicRouter);
 // Global error handler
 app.use((err, req, res, _next) => {
   console.error('[Express]', err);
-  res.status(err.status || 500).json({ error: err.message || 'Internal server error' });
+  const status = err.status || 500;
+  res.status(status).json({ error: status < 500 ? err.message : 'Internal server error' });
 });
 
 async function start() {

@@ -14,6 +14,7 @@ const REASONS = [
 export default function Unsubscribe() {
   const [params] = useSearchParams()
   const id = params.get('id')
+  const t = params.get('t')
   const [status, setStatus] = useState('prompt') // prompt | feedback | loading | done | error
   const [error, setError] = useState('')
   const [reason, setReason] = useState('')
@@ -25,13 +26,14 @@ export default function Unsubscribe() {
 
   async function confirm() {
     if (!id) { setError('Missing subscriber ID'); return }
+    if (!t) { setError('This unsubscribe link is outdated. Please use the Unsubscribe link in your most recent CollectrBrief email.'); setStatus('error'); return }
     setStatus('loading')
     try {
       const API = import.meta.env.VITE_API_URL || ''
       const finalReason = reason === 'Other' ? (otherText.trim() || 'Other') : reason
       const res = await fetch(`${API}/api/subscribers/${id}/unsubscribe`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-pref-token': t },
         body: JSON.stringify({ reason: finalReason || undefined }),
       })
       const data = await res.json()

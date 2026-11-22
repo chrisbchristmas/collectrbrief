@@ -211,7 +211,7 @@ function renderBriefEmail(subscriber, itemResults, commentary, weekOf, metrics =
   const wLabel = weekLabel(weekOf);
   const clientOrigin = process.env.CLIENT_ORIGIN || 'https://collectrbrief.com';
   const apiOrigin = process.env.API_ORIGIN || 'https://collectrbrief-api.onrender.com';
-  const unsubUrl = `${clientOrigin}/unsubscribe?id=${subscriber.id}`;
+  const unsubUrl = `${clientOrigin}/unsubscribe?id=${subscriber.id}&t=${signToken(subscriber.id)}`;
   const prefsUrl = `${clientOrigin}/preferences?id=${subscriber.id}&token=${signToken(subscriber.id)}`;
   const dashUrl = `${clientOrigin}/dashboard?id=${subscriber.id}&token=${signToken(subscriber.id)}`;
   const shareUrl = briefId ? `${apiOrigin}/b/${briefId}?t=${signToken(briefId)}` : null;

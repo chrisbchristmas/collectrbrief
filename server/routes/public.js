@@ -28,7 +28,7 @@ function isRateLimited(ip) {
 // for follow-up (no email is sent synchronously — keeps this endpoint fast).
 router.post('/api/public/price-check', async (req, res, next) => {
   try {
-    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress;
+    const ip = req.headers['cf-connecting-ip'] || req.ip; // not raw X-Forwarded-For: its first hop is client-controlled
     if (isRateLimited(ip)) {
       return res.status(429).json({ error: 'Too many lookups — try again in a bit.' });
     }

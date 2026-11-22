@@ -12,7 +12,7 @@ const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SEC
 router.post('/stripe', async (req, res) => {
   if (!stripe) {
     console.warn('[Webhook] Stripe not configured');
-    return res.sendStatus(200);
+    return res.sendStatus(503); // not 200: Stripe must retry, not drop the event
   }
 
   const sig = req.headers['stripe-signature'];
@@ -57,7 +57,7 @@ router.post('/stripe', async (req, res) => {
             amount: -monthlyPriceCents, // negative = credit toward future invoices
             currency: 'usd',
             description: 'CollectrBrief referral credit — 1 month free',
-          });
+          }, { idempotencyKey: `referral-credit-${subscriberId}` }); // retry-safe: no double credit if the flag write below fails
           await query(`UPDATE subscribers SET referral_credited = TRUE WHERE id=$1`, [subscriberId]);
           console.log(`[Webhook] Referral credit granted to ${refRow.rows[0].referrer_email}`);
         }
