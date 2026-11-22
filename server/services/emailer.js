@@ -2,12 +2,34 @@
 // Free tier: 100 emails/day. Growth: Essentials $19.95/mo for 50k/mo.
 
 import sgMail from '@sendgrid/mail';
+import { signToken } from '../utils/token.js';
 
 const FROM_EMAIL = process.env.FROM_EMAIL || 'briefs@collectrbrief.com';
 const FROM_NAME = 'CollectrBrief';
+const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'https://collectrbrief.com';
+// CAN-SPAM requires a real physical postal address (street address, PO box, or
+// commercial mail receiving agency) in every commercial email footer.
+// TODO: set COMPANY_MAILING_ADDRESS in .env — until then this is a visible placeholder, not a real fix.
+const COMPANY_ADDRESS = process.env.COMPANY_MAILING_ADDRESS || '[TODO: add CAN-SPAM-compliant mailing address]';
 
 if (process.env.SENDGRID_API_KEY) {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+}
+
+/**
+ * CAN-SPAM compliant footer: physical address + one-click unsubscribe.
+ * Every commercial/transactional email must include this.
+ * @param {string|null} subscriberId - if present, links to the real unsubscribe endpoint
+ */
+function canSpamFooter(subscriberId) {
+  const unsubUrl = subscriberId
+    ? `${CLIENT_ORIGIN}/unsubscribe?id=${subscriberId}&t=${signToken(subscriberId)}`
+    : `${CLIENT_ORIGIN}/unsubscribe`;
+  return `
+    <div style="text-align:center;color:#bbb;font-size:12px;padding:16px 0;margin-top:16px;border-top:1px solid #eee">
+      <p style="margin:0 0 4px">${COMPANY_ADDRESS}</p>
+      <p style="margin:0"><a href="${unsubUrl}" style="color:#bbb">Unsubscribe</a></p>
+    </div>`;
 }
 
 /**
@@ -47,7 +69,7 @@ export async function sendBrief(toEmail, subject, htmlContent, subscriberId) {
 /**
  * Send a welcome email after signup.
  */
-export async function sendWelcome(toEmail, firstName) {
+export async function sendWelcome(toEmail, firstName, subscriberId) {
   const subject = `Your first CollectrBrief arrives this Sunday`;
   const html = `
 <!DOCTYPE html>
@@ -71,6 +93,7 @@ export async function sendWelcome(toEmail, firstName) {
       Questions? Reply to this email — we read everything.
     </p>
     <p style="color:#888;font-size:14px">— The CollectrBrief team</p>
+    ${canSpamFooter(subscriberId)}
   </div>
 </body>
 </html>`;
@@ -86,7 +109,7 @@ export async function sendWelcome(toEmail, firstName) {
  * @param {number} currentAvg — the current market avg that triggered the alert
  * @param {string} dashUrl — link to the subscriber's dashboard
  */
-export async function sendAlertNotification(toEmail, firstName, alert, currentAvg, dashUrl) {
+export async function sendAlertNotification(toEmail, firstName, alert, currentAvg, dashUrl, subscriberId) {
   const dir = alert.direction === 'above' ? 'above' : 'below';
   const icon = alert.direction === 'above' ? '📈' : '📉';
   const subject = `${icon} Alert: ${alert.label} is now ${dir} $${Number(alert.threshold).toLocaleString()}`;
@@ -119,6 +142,7 @@ export async function sendAlertNotification(toEmail, firstName, alert, currentAv
       </a>
     </div>
     <p style="color:#bbb;font-size:12px;text-align:center">CollectrBrief · This alert has been marked as triggered and won't fire again.</p>
+    ${canSpamFooter(subscriberId)}
   </div>
 </body>
 </html>`;
@@ -129,7 +153,7 @@ export async function sendAlertNotification(toEmail, firstName, alert, currentAv
 /**
  * Trial nudge — Day 3: encourage them to flesh out a thin watchlist.
  */
-export async function sendTrialDay3Nudge(toEmail, firstName, watchlistCount, prefsUrl) {
+export async function sendTrialDay3Nudge(toEmail, firstName, watchlistCount, prefsUrl, subscriberId) {
   const subject = `Quick tip: get more out of your CollectrBrief trial`;
   const html = `
 <!DOCTYPE html>
@@ -157,6 +181,7 @@ export async function sendTrialDay3Nudge(toEmail, firstName, watchlistCount, pre
     </div>
     <p style="color:#888;font-size:14px">Questions? Just reply — we read everything.</p>
     <p style="color:#888;font-size:14px">— The CollectrBrief team</p>
+    ${canSpamFooter(subscriberId)}
   </div>
 </body>
 </html>`;
@@ -167,7 +192,7 @@ export async function sendTrialDay3Nudge(toEmail, firstName, watchlistCount, pre
 /**
  * Trial nudge — Day 12: trial ends in 2 days, highest-leverage conversion email.
  */
-export async function sendTrialEndingNudge(toEmail, firstName, trialEndsAt) {
+export async function sendTrialEndingNudge(toEmail, firstName, trialEndsAt, subscriberId) {
   const endDate = new Date(trialEndsAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
   const subject = `Your CollectrBrief trial ends ${endDate} — here's what continues`;
   const html = `
@@ -198,6 +223,7 @@ export async function sendTrialEndingNudge(toEmail, firstName, trialEndsAt) {
     </p>
     <p style="color:#888;font-size:14px;margin-top:24px">Questions? Just reply — we read everything.</p>
     <p style="color:#888;font-size:14px">— The CollectrBrief team</p>
+    ${canSpamFooter(subscriberId)}
   </div>
 </body>
 </html>`;
@@ -208,7 +234,7 @@ export async function sendTrialEndingNudge(toEmail, firstName, trialEndsAt) {
 /**
  * Win-back email — sent once, 30 days after cancellation.
  */
-export async function sendWinBackEmail(toEmail, firstName, resubscribeUrl) {
+export async function sendWinBackEmail(toEmail, firstName, resubscribeUrl, subscriberId) {
   const subject = `Here's what you've missed on CollectrBrief`;
   const html = `
 <!DOCTYPE html>
@@ -234,6 +260,7 @@ export async function sendWinBackEmail(toEmail, firstName, resubscribeUrl) {
     </div>
     <p style="color:#888;font-size:14px">This is the only email you'll get about this — no further follow-ups.</p>
     <p style="color:#888;font-size:14px">— The CollectrBrief team</p>
+    ${canSpamFooter(subscriberId)}
   </div>
 </body>
 </html>`;

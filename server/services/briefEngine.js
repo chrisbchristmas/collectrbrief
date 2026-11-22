@@ -346,6 +346,7 @@ function renderBriefEmail(subscriber, itemResults, commentary, weekOf, metrics =
     <p>You're receiving this because you subscribed to CollectrBrief.</p>
     <p><a href="${unsubUrl}" style="color:#bbb">Unsubscribe</a> · <a href="${prefsUrl}" style="color:#bbb">Manage preferences</a> · <a href="${dashUrl}" style="color:#bbb">My dashboard</a>${shareUrl ? ` · <a href="${shareUrl}" style="color:#bbb">View in browser</a>` : ''}</p>
     <p>CollectrBrief · Personalized market intelligence for collectors</p>
+    <p style="margin-top:8px">${process.env.COMPANY_MAILING_ADDRESS || '[TODO: add CAN-SPAM-compliant mailing address]'}</p>
   </div>
 
 </div>
@@ -432,7 +433,7 @@ async function checkAndFireAlerts(subscriber, itemResults) {
       );
       const clientOrigin = process.env.CLIENT_ORIGIN || 'https://collectrbrief.com';
       const dashUrl = `${clientOrigin}/dashboard?id=${subscriber.id}&token=${(await import('../utils/token.js')).signToken(subscriber.id)}`;
-      await sendAlertNotification(subscriber.email, subscriber.first_name, alert, currentAvg, dashUrl)
+      await sendAlertNotification(subscriber.email, subscriber.first_name, alert, currentAvg, dashUrl, subscriber.id)
         .catch(e => console.warn('[Alerts] Email send failed:', e.message));
       // Instant Discord delivery if the subscriber connected a webhook (never blocks email)
       if (subscriber.discord_webhook_url) {

@@ -37,7 +37,7 @@ export async function runTrialNudgeJob() {
         const clientOrigin = process.env.CLIENT_ORIGIN || 'https://www.collectrbrief.com';
         const prefsUrl = `${clientOrigin}/preferences?id=${sub.id}&token=${signToken(sub.id)}`;
         const watchlistCount = Array.isArray(sub.watchlist) ? sub.watchlist.length : 0;
-        await sendTrialDay3Nudge(sub.email, sub.first_name, watchlistCount, prefsUrl);
+        await sendTrialDay3Nudge(sub.email, sub.first_name, watchlistCount, prefsUrl, sub.id);
         await query(`UPDATE subscribers SET trial_day3_sent_at = NOW() WHERE id=$1`, [sub.id]);
         stats.day3Sent++;
       } catch (err) {
@@ -64,7 +64,7 @@ export async function runTrialNudgeJob() {
     for (const sub of endingCandidates.rows) {
       try {
         const trialEndsAt = new Date(new Date(sub.created_at).getTime() + 14 * DAY_MS);
-        await sendTrialEndingNudge(sub.email, sub.first_name, trialEndsAt);
+        await sendTrialEndingNudge(sub.email, sub.first_name, trialEndsAt, sub.id);
         await query(`UPDATE subscribers SET trial_ending_sent_at = NOW() WHERE id=$1`, [sub.id]);
         stats.endingSent++;
       } catch (err) {
@@ -91,7 +91,7 @@ export async function runTrialNudgeJob() {
       try {
         const clientOrigin = process.env.CLIENT_ORIGIN || 'https://www.collectrbrief.com';
         const resubscribeUrl = `${clientOrigin}/subscribe`;
-        await sendWinBackEmail(sub.email, sub.first_name, resubscribeUrl);
+        await sendWinBackEmail(sub.email, sub.first_name, resubscribeUrl, sub.id);
         await query(`UPDATE subscribers SET winback_sent_at = NOW() WHERE id=$1`, [sub.id]);
         stats.winbackSent++;
       } catch (err) {

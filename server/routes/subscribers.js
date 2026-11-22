@@ -83,7 +83,7 @@ router.post('/', async (req, res, next) => {
     // If no Stripe, just welcome them and return
     if (!stripe) {
       await query(`UPDATE subscribers SET subscription_status='trialing' WHERE id=$1 AND subscription_status='pending'`, [subscriber.id]);
-      await sendWelcome(email, first_name);
+      await sendWelcome(email, first_name, subscriber.id);
       return res.json({ subscriberId: subscriber.id, checkoutUrl: null, status: 'active' });
     }
 

@@ -68,7 +68,7 @@ router.post('/stripe', async (req, res) => {
       // Send welcome email
       const sub = await query('SELECT email, first_name FROM subscribers WHERE id=$1', [subscriberId]);
       if (sub.rows.length > 0) {
-        await sendWelcome(sub.rows[0].email, sub.rows[0].first_name).catch(e =>
+        await sendWelcome(sub.rows[0].email, sub.rows[0].first_name, subscriberId).catch(e =>
           console.error('[Webhook] Welcome email failed:', e.message)
         );
       }
