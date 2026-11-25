@@ -16,7 +16,9 @@ const router = Router();
 // (www.collectrbrief.com proxies these paths to this service).
 const LEGACY_ORIGIN = 'https://collectrbrief-api.onrender.com';
 const publicOrigin = () => process.env.API_ORIGIN || LEGACY_ORIGIN;
-const withOrigin = html => String(html).split(LEGACY_ORIGIN).join(publicOrigin());
+const withOrigin = html => String(html)
+  .split(LEGACY_ORIGIN).join(publicOrigin())
+  .split(encodeURIComponent(LEGACY_ORIGIN)).join(encodeURIComponent(publicOrigin()));
 
 // Very light in-memory rate limit: max 8 lookups per IP per hour.
 // Resets on process restart — acceptable for a free-tier abuse guard.
