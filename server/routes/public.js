@@ -11,6 +11,13 @@ import { fetchSoldSales, computeTrend, computeInsights } from '../services/cardh
 
 const router = Router();
 
+// Pages are baked (in the DB) with whatever API_ORIGIN was set at generation time.
+// Normalise at serve time so canonicals/links always point at the public origin
+// (www.collectrbrief.com proxies these paths to this service).
+const LEGACY_ORIGIN = 'https://collectrbrief-api.onrender.com';
+const publicOrigin = () => process.env.API_ORIGIN || LEGACY_ORIGIN;
+const withOrigin = html => String(html).split(LEGACY_ORIGIN).join(publicOrigin());
+
 // Very light in-memory rate limit: max 8 lookups per IP per hour.
 // Resets on process restart — acceptable for a free-tier abuse guard.
 const rateLimitMap = new Map();
@@ -92,7 +99,7 @@ router.get('/sample', async (req, res, next) => {
       return res.status(404).send(shell('Coming soon', '<p>The sample brief is generated every Sunday. Check back shortly.</p>'));
     }
     res.setHeader('Content-Type', 'text/html');
-    res.send(injectCta(r.rows[0].html));
+    res.send(withOrigin(injectCta(r.rows[0].html)));
   } catch (err) {
     next(err);
   }
@@ -108,7 +115,7 @@ router.get('/market/:nicheSlug', async (req, res, next) => {
     );
     if (r.rows.length === 0) return res.status(404).send(shell('Not found', '<p>No market page for this niche yet.</p>'));
     res.setHeader('Content-Type', 'text/html');
-    res.send(r.rows[0].html);
+    res.send(withOrigin(r.rows[0].html));
   } catch (err) {
     next(err);
   }
@@ -122,7 +129,7 @@ router.get('/trending', async (req, res, next) => {
       return res.status(404).send(shell('Coming soon', '<p>The trending leaderboard is generated every Sunday. Check back shortly.</p>'));
     }
     res.setHeader('Content-Type', 'text/html');
-    res.send(r.rows[0].html);
+    res.send(withOrigin(r.rows[0].html));
   } catch (err) {
     next(err);
   }
@@ -132,7 +139,7 @@ router.get('/trending', async (req, res, next) => {
 // Kept separate from the client's sitemap.xml since these pages are served from
 // collectrbrief-api.onrender.com, a different origin — Google Search Console
 // requires a distinct verified property + sitemap per origin.
-router.get('/sitemap.xml', async (req, res, next) => {
+router.get(['/sitemap.xml', '/sitemap-content.xml'], async (req, res, next) => {
   try {
     const apiOrigin = process.env.API_ORIGIN || 'https://collectrbrief-api.onrender.com';
     const nicheRows = await query(`SELECT DISTINCT niche_slug FROM market_pages`);
@@ -156,7 +163,7 @@ ${urls.map(u => `  <url>\n    <loc>${u.loc}</loc>\n    <changefreq>${u.changefre
 router.get('/robots.txt', (req, res) => {
   const apiOrigin = process.env.API_ORIGIN || 'https://collectrbrief-api.onrender.com';
   res.setHeader('Content-Type', 'text/plain');
-  res.send(`User-agent: *\nAllow: /sample\nAllow: /market/\nAllow: /trending\nDisallow: /b/\nDisallow: /api/\nSitemap: ${apiOrigin}/sitemap.xml\n`);
+  res.send(`User-agent: *\nAllow: /sample\nAllow: /market/\nAllow: /trending\nDisallow: /b/\nDisallow: /api/\nSitemap: ${apiOrigin}/sitemap-content.xml\n`);
 });
 
 // GET /google11c1ff63d4017769.html — Search Console ownership verification file

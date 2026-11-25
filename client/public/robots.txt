@@ -2,3 +2,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://www.collectrbrief.com/sitemap.xml
+Sitemap: https://www.collectrbrief.com/sitemap-content.xml
