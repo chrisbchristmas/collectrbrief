@@ -57,6 +57,7 @@ export default function Onboarding() {
   const ref = params.get('ref') || ''
   const [step, setStep] = useState(0)
   const [form, setForm] = useState({ email: '', first_name: '', niche: '' })
+  const [ageConfirmed, setAgeConfirmed] = useState(false)
   const [watchlist, setWatchlist] = useState([{ label: '', keywords: '' }])
   const [plan, setPlan] = useState('monthly')
   const [annualEnabled, setAnnualEnabled] = useState(false)
@@ -92,7 +93,7 @@ export default function Onboarding() {
     setWatchlist(hasRealContent ? [...watchlist, ...picks].slice(0, 15) : picks)
   }
 
-  const validStep0 = form.email.includes('@') && form.niche
+  const validStep0 = form.email.includes('@') && form.niche && ageConfirmed
   const validStep1 = watchlist.length > 0 && watchlist.every(w => w.label.trim() && w.keywords.trim())
 
   async function submit() {
@@ -166,6 +167,18 @@ export default function Onboarding() {
                   <option value="">Select your niche…</option>
                   {NICHES.map(n => <option key={n} value={n}>{n}</option>)}
                 </select>
+              </div>
+              <div className={styles.field} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                <input
+                  type="checkbox"
+                  id="age-confirm"
+                  checked={ageConfirmed}
+                  onChange={e => setAgeConfirmed(e.target.checked)}
+                  style={{ marginTop: '0.2rem', width: 'auto' }}
+                />
+                <label htmlFor="age-confirm" style={{ fontWeight: 400, fontSize: '0.85rem' }}>
+                  I confirm I am 13 years of age or older. *
+                </label>
               </div>
               <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }} disabled={!validStep0} onClick={() => setStep(1)}>
                 Next →

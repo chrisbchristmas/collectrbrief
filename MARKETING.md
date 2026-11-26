@@ -78,15 +78,15 @@ Once verified, submit the sitemap: Sitemaps → enter `sitemap.xml` → Submit.
 
 ## 📈 FREE DISTRIBUTION CHANNELS (submit once, permanent visibility)
 
-| Where | URL | Notes |
+| Where | Status | Notes |
 |---|---|---|
-| Product Hunt | producthunt.com | Biggest single-day traffic spike available. Launch on a Tue–Thu. |
-| BetaList | betalist.com | Free listing for new startups |
-| Indie Hackers | indiehackers.com | Post a "launch" milestone + product page |
-| SaaSHub | saashub.com | Free SaaS directory |
-| AlternativeTo | alternativeto.net | List as alternative to Market Movers / Card Ladder |
-| There's An AI For That | theresanaiforthat.com | The AI commentary angle qualifies |
-| Uneed | uneed.best | Free launch platform, good for SaaS |
+| SaaSHub | ✅ SUBMITTED 2026-11-02 | Free tier used. Listed as competitor to CollX, CardPrices.io, Market Movers. Categories: Price Monitoring, Email Newsletters, Price Comparison. In approval queue — "verify it" (needs login) speeds approval. |
+| AlternativeTo | ⛔ BLOCKED — needs account | Submission form requires sign-in (Google/GitHub/Apple/email). No account exists. Decide: create one under hello@collectrbrief.com? |
+| Indie Hackers | ⛔ BLOCKED — needs account | Same — requires login to post a product/launch. |
+| Product Hunt | ⛔ BLOCKED — needs account | Requires account + ideally a "hunter" with followers for visibility. Best launched Tue–Thu with assets ready (logo, gallery, tagline) — worth doing deliberately, not rushed. |
+| BetaList | ⛔ NO LONGER FREE | Checked 2026-11-02: BetaList now charges for listings (was free when this doc was written in Aug). Needs a pay decision. |
+| There's An AI For That | not yet attempted | Likely free, not yet checked for login requirement. |
+| Uneed | not yet attempted | Likely free, not yet checked for login requirement. |
 
 ## 💡 ONGOING GROWTH (already built into the product)
 - **Referral program is live** — every brief has "give a month, get a month." Mention it in every post.

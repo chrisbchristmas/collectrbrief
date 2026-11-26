@@ -13,6 +13,7 @@ import CompareCardLadder from './pages/CompareCardLadder.jsx'
 import Compare130point from './pages/Compare130point.jsx'
 import ComparePriceCharting from './pages/ComparePriceCharting.jsx'
 import AddItem from './pages/AddItem.jsx'
+import './fonts.css'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
