@@ -42,7 +42,7 @@ export async function generateSampleBrief(weekOf) {
     return null;
   }
   // Public pages never show placeholder text — omit the section if no LLM is configured.
-  const commentary = LLM_ENABLED ? await generateCommentary(SAMPLE_SUBSCRIBER, itemResults).catch(() => null) : null;
+  const commentary = LLM_ENABLED ? await generateCommentary(SAMPLE_SUBSCRIBER, itemResults).catch(e => { console.error('[PublicContent] commentary failed:', e.message); return null; }) : null;
   const html = renderPublicBrief(itemResults, commentary, weekOf);
 
   await query(
@@ -65,7 +65,7 @@ export async function generateMarketPages(weekOf) {
       }
       const commentary = LLM_ENABLED ? await generateCommentary(
         { niche: niche.name, watchlist: niche.items }, itemResults
-      ).catch(() => null) : null;
+      ).catch(e => { console.error('[PublicContent] commentary failed:', e.message); return null; }) : null;
       const html = renderMarketPage(niche, itemResults, commentary, weekOf);
       await query(
         `INSERT INTO market_pages (niche_slug, week_of, html) VALUES ($1, $2, $3)

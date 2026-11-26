@@ -5,7 +5,7 @@
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 const API_KEY = process.env.OPENAI_API_KEY;
 const BASE_URL = process.env.LLM_BASE_URL || 'https://api.openai.com/v1';
-const MODEL = process.env.LLM_MODEL || (ANTHROPIC_KEY ? 'claude-haiku-4-5-20251001' : 'gpt-4o-mini');
+const MODEL = ANTHROPIC_KEY ? (process.env.ANTHROPIC_MODEL || 'claude-haiku-4-5-20251001') : (process.env.LLM_MODEL || 'gpt-4o-mini');
 export const LLM_ENABLED = Boolean(ANTHROPIC_KEY || API_KEY);
 
 /**
