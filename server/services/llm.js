@@ -1,10 +1,12 @@
-// services/llm.js — OpenAI-compatible LLM for brief commentary
-// Uses the OPENAI_API_KEY env var; swap base URL for Ollama locally
+// services/llm.js — LLM for brief commentary
+// ANTHROPIC_API_KEY → Claude Messages API (default claude-haiku-4-5-20251001);
+// else OPENAI_API_KEY → any OpenAI-compatible endpoint (swap LLM_BASE_URL for Ollama locally).
 
+const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 const API_KEY = process.env.OPENAI_API_KEY;
 const BASE_URL = process.env.LLM_BASE_URL || 'https://api.openai.com/v1';
-const MODEL = process.env.LLM_MODEL || 'gpt-4o-mini';
-export const LLM_ENABLED = Boolean(API_KEY);
+const MODEL = process.env.LLM_MODEL || (ANTHROPIC_KEY ? 'claude-haiku-4-5-20251001' : 'gpt-4o-mini');
+export const LLM_ENABLED = Boolean(ANTHROPIC_KEY || API_KEY);
 
 /**
  * Generate a Buy / Hold / Watch commentary for a subscriber's watchlist.
@@ -24,9 +26,20 @@ WATCH = mixed signals or a notable event worth tracking.`;
 
   const userPrompt = buildUserPrompt(subscriber, itemResults);
 
-  if (!API_KEY) {
+  if (!ANTHROPIC_KEY && !API_KEY) {
     console.warn('[LLM] No API key — returning mock commentary');
     return getMockCommentary(itemResults);
+  }
+
+  if (ANTHROPIC_KEY) {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+      body: JSON.stringify({ model: MODEL, system: systemPrompt, messages: [{ role: 'user', content: userPrompt }], max_tokens: 1200 }),
+      signal: AbortSignal.timeout(30000),
+    });
+    if (!r.ok) throw new Error(`LLM API ${r.status}: ${(await r.text()).slice(0, 200)}`);
+    return (await r.json()).content?.find(b => b.type === 'text')?.text || '';
   }
 
   const res = await fetch(`${BASE_URL}/chat/completions`, {
