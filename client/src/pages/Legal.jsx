@@ -85,7 +85,7 @@ export default function Legal() {
 
             <h2 className={styles.h2}>1. Data We Collect</h2>
             <p><strong>Information you provide:</strong> When you subscribe, we collect your email address, name (optional), collectibles niche, and watchlist items (the specific items you want tracked). If you subscribe via Stripe, your payment details are collected directly by Stripe — we never see or store your full card number.</p>
-            <p><strong>Information collected automatically:</strong> We may collect basic usage data (delivery open/click events via SendGrid, browser type, and referral source from URL parameters) for the purpose of improving the Service.</p>
+            <p><strong>Information collected automatically:</strong> We may collect basic usage data (delivery open/click events via Resend, browser type, and referral source from URL parameters) for the purpose of improving the Service.</p>
 
             <h2 className={styles.h2}>2. How We Use Your Data</h2>
             <ul className={styles.list}>
