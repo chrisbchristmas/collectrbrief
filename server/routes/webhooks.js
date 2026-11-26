@@ -51,9 +51,11 @@ router.post('/stripe', async (req, res) => {
       await query(
         `UPDATE subscribers
          SET stripe_customer_id=$1, stripe_subscription_id=$2,
-             subscription_status='active', plan='pro', updated_at=NOW()
+             subscription_status=$4, plan='pro', updated_at=NOW()
          WHERE id=$3`,
-        [session.customer, session.subscription, subscriberId]
+        // Trial signups complete checkout with no payment due: mark 'trialing' so the
+        // day-3 / day-12 nudges fire; customer.subscription.updated flips to 'active' at trial end.
+        [session.customer, session.subscription, subscriberId, session.payment_status === 'paid' ? 'active' : 'trialing']
       );
 
       // Referral credit: give the referrer one free month (Stripe balance credit)

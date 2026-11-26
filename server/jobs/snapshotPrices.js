@@ -24,7 +24,7 @@ export function scheduleSnapshotJob() {
   cron.schedule('0 3 * * *', () => {
     console.log('[Snapshot] Daily run starting...');
     runSnapshotJob().catch(err => console.error('[Snapshot] Fatal error:', err));
-  });
+  }, { timezone: 'America/New_York' });
   console.log('[Snapshot] Scheduled: daily at 3:00am');
 }
 

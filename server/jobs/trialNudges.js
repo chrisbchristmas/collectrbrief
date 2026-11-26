@@ -13,7 +13,7 @@ export function scheduleTrialNudgeJob() {
   cron.schedule('0 10 * * *', () => {
     console.log('[TrialNudges] Daily run starting...');
     runTrialNudgeJob().catch(err => console.error('[TrialNudges] Fatal error:', err));
-  });
+  }, { timezone: 'America/New_York' });
   console.log('[TrialNudges] Scheduled: daily at 10:00am');
 }
 

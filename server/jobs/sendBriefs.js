@@ -15,8 +15,8 @@ export function scheduleBriefJob() {
   cron.schedule('0 8 * * 0', () => {
     console.log('[BriefJob] Weekly brief run starting...');
     runBriefJob().catch(err => console.error('[BriefJob] Fatal error:', err));
-  });
-  console.log('[BriefJob] Scheduled: Sundays at 8:00am');
+  }, { timezone: 'America/New_York' });
+  console.log('[BriefJob] Scheduled: Sundays at 8:00am ET');
 }
 
 export async function runBriefJob() {
