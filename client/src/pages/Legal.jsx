@@ -101,7 +101,7 @@ export default function Legal() {
             <p>We use the following sub-processors:</p>
             <ul className={styles.list}>
               <li><strong>Stripe</strong> — payment processing (Stripe's Privacy Policy applies to payment data)</li>
-              <li><strong>SendGrid (Twilio)</strong> — email delivery</li>
+              <li><strong>Resend</strong> — email delivery</li>
               <li><strong>Render</strong> — hosting and infrastructure</li>
               <li><strong>Neon</strong> — database hosting (PostgreSQL)</li>
             </ul>
