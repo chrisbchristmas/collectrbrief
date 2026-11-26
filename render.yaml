@@ -18,7 +18,7 @@ services:
         sync: false
       - key: ADMIN_KEY
         sync: false
-      - key: SENDGRID_API_KEY
+      - key: RESEND_API_KEY
         sync: false
       - key: CLIENT_ORIGIN
         value: https://collectrbrief.onrender.com

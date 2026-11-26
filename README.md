@@ -9,7 +9,7 @@ Personalized weekly market intelligence for collectors. Every Sunday: sold price
 | API server | Node.js 24 + Express |
 | Database | Neon Postgres (free tier) |
 | Payments | Stripe (subscriptions + webhooks) |
-| Email | SendGrid (free → Essentials) |
+| Email | Resend (free → Pro) |
 | Price data | CardHedge API ($0.01/call) + PriceCharting API ($4.99/mo) |
 | AI commentary | OpenAI-compatible (gpt-4o-mini or any Ollama model) |
 | Frontend | React 18 + Vite |
@@ -22,7 +22,7 @@ Personalized weekly market intelligence for collectors. Every Sunday: sold price
 ```bash
 cd server
 cp .env.example .env
-# Fill in DATABASE_URL, STRIPE_*, SENDGRID_API_KEY, CARDHEDGE_API_KEY, PRICECHARTING_API_KEY, OPENAI_API_KEY
+# Fill in DATABASE_URL, STRIPE_*, RESEND_API_KEY, CARDHEDGE_API_KEY, PRICECHARTING_API_KEY, OPENAI_API_KEY
 npm install
 npm run dev
 ```
@@ -53,7 +53,7 @@ See `server/.env.example` for all required variables.
 | `STRIPE_SECRET_KEY` | ✓ prod | `sk_test_...` for dev |
 | `STRIPE_PRICE_ID` | ✓ prod | Your $9.99/mo recurring price ID |
 | `STRIPE_WEBHOOK_SECRET` | ✓ prod | From Stripe dashboard |
-| `SENDGRID_API_KEY` | ✓ prod | Free tier: 100 emails/day |
+| `RESEND_API_KEY` | ✓ prod | Free tier: 100 emails/day |
 | `CARDHEDGE_API_KEY` | ✓ prod | api.cardhedger.com — $0.01/call |
 | `PRICECHARTING_API_KEY` | prod | $4.99/mo — optional supplement |
 | `OPENAI_API_KEY` | ✓ prod | Or set `LLM_BASE_URL` for Ollama |
@@ -83,7 +83,7 @@ Admin endpoints require `X-Admin-Key` header matching `ADMIN_KEY`.
 | Stage | Monthly cost |
 |---|---|
 | 0–100 subs | ~$13 (Render $7 + PriceCharting $5 + LLM ~$1) |
-| 100–500 subs | ~$340 (+ SendGrid $20 + CardHedge ~$300 at 15 items × 500 subs) |
+| 100–500 subs | ~$340 (+ Resend $20 + CardHedge ~$300 at 15 items × 500 subs) |
 | Revenue @ 500 × $9.99 | $4,995 |
 
 ## Deployment (Render)

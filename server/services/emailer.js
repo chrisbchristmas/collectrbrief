@@ -1,7 +1,6 @@
-// services/emailer.js — SendGrid transactional email
-// Free tier: 100 emails/day. Growth: Essentials $19.95/mo for 50k/mo.
+// services/emailer.js — Resend transactional email (REST API, no SDK)
+// Free tier: 3,000 emails/mo, 100/day. Pro $20/mo for 50k/mo.
 
-import sgMail from '@sendgrid/mail';
 import { signToken } from '../utils/token.js';
 
 const FROM_EMAIL = process.env.FROM_EMAIL || 'briefs@collectrbrief.com';
@@ -11,10 +10,6 @@ const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'https://collectrbrief.com';
 // commercial mail receiving agency) in every commercial email footer.
 // TODO: set COMPANY_MAILING_ADDRESS in .env — until then this is a visible placeholder, not a real fix.
 const COMPANY_ADDRESS = process.env.COMPANY_MAILING_ADDRESS || '[TODO: add CAN-SPAM-compliant mailing address]';
-
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-}
 
 /**
  * CAN-SPAM compliant footer: physical address + one-click unsubscribe.
@@ -40,30 +35,20 @@ function canSpamFooter(subscriberId) {
  * @param {string} subscriberId - used for unsubscribe link
  */
 export async function sendBrief(toEmail, subject, htmlContent, subscriberId) {
-  if (!process.env.SENDGRID_API_KEY) {
-    console.warn(`[Emailer] No SENDGRID_API_KEY — would have sent to ${toEmail}`);
+  if (!process.env.RESEND_API_KEY) {
+    console.warn(`[Emailer] No RESEND_API_KEY — would have sent to ${toEmail}`);
     console.log(`[Emailer] Subject: ${subject}`);
     return { messageId: 'mock-' + Date.now(), mock: true };
   }
 
-  const msg = {
-    to: toEmail,
-    from: { email: FROM_EMAIL, name: FROM_NAME },
-    subject,
-    html: htmlContent,
-    trackingSettings: {
-      clickTracking: { enable: true },
-      openTracking: { enable: true },
-    },
-  };
-
-  try {
-    const [response] = await sgMail.send(msg);
-    return { messageId: response.headers['x-message-id'], statusCode: response.statusCode };
-  } catch (err) {
-    const detail = err.response?.body?.errors?.[0]?.message || err.message;
-    throw new Error(`SendGrid error: ${detail}`);
-  }
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from: `${FROM_NAME} <${FROM_EMAIL}>`, to: [toEmail], subject, html: htmlContent }),
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(`Resend error: ${body.message || res.status}`);
+  return { messageId: body.id, statusCode: res.status };
 }
 
 /**
