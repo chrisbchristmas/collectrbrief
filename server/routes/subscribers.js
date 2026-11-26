@@ -33,7 +33,10 @@ const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SEC
 router.post('/', async (req, res, next) => {
   try {
     if (signupLimited(req.headers['cf-connecting-ip'] || req.ip)) return res.status(429).json({ error: 'Too many signup attempts. Please try again later.' });
-    const { email, first_name, niche, watchlist, plan, ref } = req.body;
+    const { email, first_name, niche, watchlist, plan, ref, age_confirmed } = req.body;
+    if (age_confirmed !== true) {
+      return res.status(400).json({ error: 'You must confirm you are 13 or older to subscribe' });
+    }
 
     if (!email || !niche || !Array.isArray(watchlist) || watchlist.length === 0) {
       return res.status(400).json({ error: 'email, niche, and watchlist are required' });

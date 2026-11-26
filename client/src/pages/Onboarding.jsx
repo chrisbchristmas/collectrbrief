@@ -107,6 +107,7 @@ export default function Onboarding() {
         body: JSON.stringify({
           email: form.email.trim().toLowerCase(),
           first_name: form.first_name.trim() || null,
+          age_confirmed: ageConfirmed,
           niche: form.niche,
           watchlist: watchlist.map(w => ({ label: w.label.trim(), keywords: w.keywords.trim() })),
           plan,
