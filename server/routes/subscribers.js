@@ -111,7 +111,9 @@ router.post('/', async (req, res, next) => {
         trial_period_days: 14,
         metadata: { subscriber_id: subscriber.id },
       },
-    });
+      // Stripe account is shared with another product; override its brand name per session (needs newer API version)
+      branding_settings: { display_name: 'CollectrBrief' },
+    }, { apiVersion: '2025-09-30.clover' });
 
     res.json({ subscriberId: subscriber.id, checkoutUrl: session.url });
   } catch (err) {
